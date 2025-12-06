@@ -191,11 +191,9 @@ export class Controls {
             this.togglePlay();
         };
 
-        // Click on video to toggle play (if not handled by gestures plugin separately)
-        // We'll attach to the video element for a basic fallback
-        this.player.media.addEventListener('click', () => {
-            this.togglePlay();
-        });
+        // Note: Click on video to toggle play is removed to avoid conflict with Gestures.
+        // If gestures are not used, one might want to re-enable this or use a separate ClickPlugin.
+
 
         this.muteBtn.onclick = () => {
             const s = this.player.getState();
@@ -329,7 +327,7 @@ export class Controls {
         if (this.feedbackTimeout) clearTimeout(this.feedbackTimeout);
         this.feedbackTimeout = setTimeout(() => {
             this.feedbackOverlay.style.opacity = '0';
-            this.feedbackOverlay.style.transform = 'translate(-50%, -50%) scale(1.5)';
+            this.feedbackOverlay.style.transform = 'translate(-50%, -50%) scale(1.1)';
         }, 500);
     }
 

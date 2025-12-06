@@ -51,7 +51,7 @@ export class Gestures {
       const rect = (area as HTMLElement).getBoundingClientRect();
       const x = e.clientX - rect.left;
       const y = e.clientY - rect.top;
-      this.adjustingVol = x > rect.width * 0.6;
+      this.adjustingVol = x > rect.width * 0.5;
       clearTimeout(this.pressTimer);
       this.pressTimer = setTimeout(() => {
         this.pressedBoost = true;
@@ -92,7 +92,8 @@ export class Gestures {
       this.tapTimer = setTimeout(() => {
         const paused = this.player.getState().paused;
         if (paused) this.player.play(); else this.player.pause();
-        this.showCenter(paused ? 'play' : 'pause');
+        // Feedback handled by Controls or other UI
+        // this.showCenter(paused ? 'play' : 'pause'); 
       }, 250);
     });
   }
@@ -114,13 +115,13 @@ export class Gestures {
   }
 
   private showVolume(v: number) {
-    this.vol.innerHTML = `<div class="ap-g-volbar" style="width:${Math.round(v*100)}%"></div>`;
+    this.vol.innerHTML = `<div class="ap-g-volbar" style="width:${Math.round(v * 100)}%"></div>`;
     this.vol.style.display = 'block';
     clearTimeout((this.vol as any)._t);
     (this.vol as any)._t = setTimeout(() => { this.vol.style.display = 'none'; }, 800);
   }
 
-  private icon(name: 'play'|'pause'|'forward'|'back'|'maximize'|'boost') {
+  private icon(name: 'play' | 'pause' | 'forward' | 'back' | 'maximize' | 'boost') {
     switch (name) {
       case 'play': return '<svg viewBox="0 0 24 24"><path fill="currentColor" d="M8 5v14l11-7-11-7Z"/></svg>';
       case 'pause': return '<svg viewBox="0 0 24 24"><path fill="currentColor" d="M6 5h4v14H6zm8 0h4v14h-4z"/></svg>';

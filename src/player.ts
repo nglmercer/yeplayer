@@ -50,12 +50,13 @@ export class Player implements IPlayer {
   }
 
   private getPlayerContainer(): HTMLElement {
-    // Find the nearest parent with class 'player' or the media element itself
+    // Find the nearest parent with class 'player' or containing class indicating wrapper, otherwise direct parent
     let container = this.media.parentElement;
-    while (container && !container.classList.contains("player")) {
+    while (container && !container.classList.contains("player") && !container.classList.contains("player-wrapper") && container.tagName !== 'BODY') {
       container = container.parentElement;
     }
-    return container || this.media;
+    // Fallback to direct parent if specific class not found but parent exists
+    return container || this.media.parentElement || this.media;
   }
 
   private setupPluginAPI(): void {
