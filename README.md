@@ -1,6 +1,6 @@
-# YTPlayer Documentation
+# yeplayer Documentation
 
-Welcome to the **YTPlayer** documentation. This library provides a highly customizable, YouTube-like video player experience for the web.
+Welcome to the **yeplayer** documentation. This library provides a highly customizable, video player experience for the web.
 
 ## Quick Links
 
@@ -15,3 +15,4 @@ Welcome to the **YTPlayer** documentation. This library provides a highly custom
 - **HLS Support**: Built-in plugin for adaptive streaming.
 - **Accessibility**: Keyboard navigation and ARIA support.
 - **Extensible**: Plugin system for quality, audio tracks, and more.
+
