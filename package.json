@@ -1,0 +1,63 @@
+{
+  "name": "agnostic-player",
+  "version": "0.1.0",
+  "description": "Un reproductor de video/audio modular y extensible con sistema de plugins",
+  "private": true,
+  "type": "module",
+  "main": "dist/index.cjs",
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "scripts": {
+    "build": "tsup src/index.ts --format esm,cjs --dts --sourcemap --clean",
+    "dev": "tsup src/index.ts --watch",
+    "serve": "npx -y http-server . -p 5173 -c-1 --cors",
+    "serve:example": "npm run build && npm run serve",
+    "dev:example": "concurrently \"npm run dev\" \"npm run serve\"",
+    "test": "echo \"No tests yet\"",
+    "lint": "echo \"No linter configured yet\""
+  },
+  "keywords": [
+    "video",
+    "audio",
+    "player",
+    "media",
+    "hls",
+    "dash",
+    "thumbnails",
+    "typescript",
+    "plugins",
+    "modular",
+    "framework-agnostic"
+  ],
+  "author": "Agnostic Player Team",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/your-username/agnostic-player"
+  },
+  "bugs": {
+    "url": "https://github.com/your-username/agnostic-player/issues"
+  },
+  "homepage": "https://github.com/your-username/agnostic-player#readme",
+  "devDependencies": {
+    "concurrently": "^8.2.2",
+    "hls.js": "^1.6.15",
+    "tsup": "^8.5.1",
+    "typescript": "^5.9.3"
+  },
+  "peerDependencies": {
+    "hls.js": "^1.4.0"
+  },
+  "peerDependenciesMeta": {
+    "hls.js": {
+      "optional": true
+    }
+  }
+}

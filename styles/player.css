@@ -1,0 +1,1215 @@
+:root {
+    /* YouTube-inspired color palette */
+    --yt-bg: #0f0f0f;
+    --yt-surface: #212121;
+    --yt-surface-variant: #272727;
+    --yt-surface-dim: #1a1a1a;
+    --yt-on-surface: #ffffff;
+    --yt-on-surface-variant: #aaaaaa;
+    --yt-primary: #ff0000;
+    --yt-secondary: #3ea6ff;
+    --yt-tertiary: #606060;
+    --yt-outline: #404040;
+    --yt-scrubber: #ff0000;
+    --yt-progress-loaded: rgba(255, 255, 255, 0.3);
+    --yt-shadow: rgba(0, 0, 0, 0.3);
+
+    /* Fallback for existing variables */
+    --ap-bg: var(--yt-bg);
+    --ap-fg: var(--yt-on-surface);
+    --ap-panel-bg: rgba(33, 33, 33, 0.95);
+    --ap-panel-border: var(--yt-outline);
+    --ap-hover: var(--yt-surface-variant);
+    --ap-accent: var(--yt-secondary);
+
+    /* Dynamic positioning variables (set by JavaScript) */
+    --progress-bar-bottom: 48px;
+    --progress-bar-height: 4px;
+    --progress-bar-hover-height: 6px;
+    --fullscreen-progress-bottom: 68px;
+    --controls-min-height: 48px;
+    --button-min-size: 40px;
+    --play-button-min-size: 48px;
+    --slider-thumb-size: 12px;
+
+    /* Grid layout variables */
+    --progress-bar-row-height: auto;
+    --controls-row-height: auto;
+    --controls-gap: 8px;
+    --controls-padding: 12px;
+
+    /* Responsive scale factors */
+    --mobile-scale: 1.2;
+    --tablet-scale: 1.1;
+    --desktop-scale: 1;
+}
+
+/* Reset and base styles */
+* {
+    box-sizing: border-box;
+}
+
+body {
+    font-family:
+        "Roboto",
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        sans-serif;
+    background: var(--yt-bg);
+    color: var(--yt-on-surface);
+    margin: 0;
+    padding: 20px;
+    line-height: 1.4;
+}
+
+/* Layout helpers for demo */
+.wrap {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+/* Main player container */
+.player {
+    position: relative;
+    background: #000;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 20px var(--yt-shadow);
+    font-size: 14px;
+}
+
+.video-container video {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    z-index: 1;
+}
+
+/* Controls container with exact grid positioning */
+.controls {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.8), transparent);
+    padding: 0;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    z-index: 45;
+
+    /* Exact grid layout for precise alignment */
+    display: grid;
+    grid-template-rows: var(--progress-bar-row-height, auto) var(
+            --controls-row-height,
+            auto
+        );
+    grid-template-columns: auto 1fr auto;
+    gap: 0;
+    align-items: center;
+    min-height: 0; /* Allow grid to shrink */
+    box-sizing: border-box;
+}
+
+.player:hover .controls,
+.controls:hover {
+    opacity: 1;
+}
+
+/* Progress bar grid cell */
+.controls-progress {
+    grid-column: 1 / -1;
+    grid-row: 1;
+    height: var(--progress-bar-height, 4px);
+    position: relative;
+    z-index: 41;
+}
+
+/* Main controls grid cell */
+.controls-main {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--controls-padding, 12px);
+    min-height: var(--controls-min-height, 60px);
+    box-sizing: border-box;
+}
+
+/* Progress bar positioned within grid */
+.progress-container {
+    position: relative;
+    left: 0;
+    right: 0;
+    height: var(--progress-bar-height, 4px);
+    background: rgba(255, 255, 255, 0.1);
+    cursor: pointer;
+    transition: height 0.2s ease;
+    z-index: 41; /* Within controls grid */
+    /* Ensure exact positioning within grid cell */
+    margin: 0;
+    padding: 0;
+    border: none;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+/* Ensure progress bar is properly positioned at the top */
+.video-container {
+    position: relative;
+    width: 100%;
+    padding-bottom: 56.25%; /* 16:9 aspect ratio */
+    background: #000;
+}
+
+/* Progress bar should overlay the video at bottom, just above controls */
+/* This is now defined in the main .progress-container rule */
+
+.progress-container:hover {
+    height: var(--progress-bar-hover-height, 6px);
+    /* Enhanced visual feedback for touch devices */
+    transform: scaleY(var(--hover-scale, 1.2));
+    /* Add glow effect on hover */
+    box-shadow: 0 0 8px rgba(62, 166, 255, 0.3);
+}
+
+.progress-bar {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.progress-loaded {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    background: var(--yt-progress-loaded);
+}
+
+.progress-played {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    background: linear-gradient(
+        to right,
+        var(--yt-scrubber) 0%,
+        var(--yt-scrubber) 99%,
+        rgba(255, 0, 0, 0.8) 100%
+    );
+    transition: width 0.1s linear;
+    /* Add subtle glow effect */
+    box-shadow: 0 0 4px rgba(255, 0, 0, 0.2);
+}
+
+.scrubber {
+    position: absolute;
+    top: 50%;
+    right: -6px;
+    width: 12px;
+    height: 12px;
+    background: var(--yt-scrubber);
+    border-radius: 50%;
+    border: 2px solid white;
+    transform: translateY(-50%) scale(0.8);
+    opacity: 0;
+    transition:
+        opacity 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+        transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow:
+        0 2px 8px rgba(0, 0, 0, 0.3),
+        0 0 0 0 rgba(62, 166, 255, 0.4);
+}
+
+.progress-container:hover .scrubber {
+    opacity: 1;
+    transform: translateY(-50%) scale(1);
+    box-shadow:
+        0 2px 12px rgba(0, 0, 0, 0.4),
+        0 0 0 4px rgba(62, 166, 255, 0.2);
+}
+
+.progress-container:active .scrubber {
+    transform: translateY(-50%) scale(1.2);
+    box-shadow:
+        0 4px 16px rgba(0, 0, 0, 0.5),
+        0 0 0 6px rgba(62, 166, 255, 0.3);
+}
+
+/* Control buttons layout */
+/* Left controls section */
+.controls-left {
+    display: flex;
+    align-items: center;
+    gap: var(--controls-gap, 8px);
+    flex-wrap: nowrap;
+}
+
+/* Right controls section */
+.controls-right {
+    display: flex;
+    align-items: center;
+    gap: var(--controls-gap, 8px);
+    flex-wrap: nowrap;
+}
+
+.controls-left {
+    display: flex;
+    align-items: center;
+    gap: 0;
+}
+
+.controls-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-left: auto;
+}
+
+/* Buttons */
+.ctrl.btn {
+    background: transparent;
+    border: none;
+    color: var(--yt-on-surface);
+    padding: clamp(6px, 1.5vw, 10px); /* Responsive padding */
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition:
+        background 0.2s ease,
+        transform 0.2s ease;
+    position: relative;
+    min-width: var(--button-min-size, 40px);
+    min-height: var(--button-min-size, 40px);
+    /* Ensure touch targets meet accessibility standards */
+    -webkit-tap-highlight-color: transparent;
+}
+
+.ctrl.btn {
+    /* Enhanced transitions for better feel */
+    transition:
+        background 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+        transform 0.15s cubic-bezier(0.4, 0, 0.2, 1),
+        box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.ctrl.btn::before {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    transition:
+        width 0.4s ease,
+        height 0.4s ease;
+}
+
+.ctrl.btn:hover {
+    background: var(--yt-surface-variant);
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.ctrl.btn:active {
+    transform: scale(0.95);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+}
+
+.ctrl.btn:active::before {
+    width: 100px;
+    height: 100px;
+}
+
+.ctrl.btn:active {
+    transform: scale(0.95);
+}
+
+.ctrl.btn svg {
+    width: clamp(16px, 4vw, 24px); /* Responsive SVG size */
+    height: clamp(16px, 4vw, 24px);
+    fill: currentColor;
+}
+
+.ctrl.btn.play-pause {
+    padding: clamp(8px, 2vw, 12px);
+    border-radius: 50%;
+    min-width: var(--play-button-min-size, 48px);
+    min-height: var(--play-button-min-size, 48px);
+}
+
+.ctrl.btn.play-pause svg {
+    width: clamp(20px, 5vw, 28px); /* Larger for play button */
+    height: clamp(20px, 5vw, 28px);
+}
+
+/* Time display */
+.time-display {
+    color: var(--yt-on-surface);
+    font-size: clamp(11px, 2.5vw, 14px); /* Responsive font size */
+    font-family: "Roboto Mono", monospace;
+    margin: 0 clamp(4px, 1.5vw, 12px);
+    user-select: none;
+    white-space: nowrap;
+    line-height: 1;
+}
+
+/* Volume slider */
+.volume-container {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.ctrl[type="range"] {
+    width: clamp(60px, 15vw, 100px); /* Responsive width */
+    height: 4px;
+    background: var(--yt-outline);
+    border-radius: 2px;
+    outline: none;
+    -webkit-appearance: none;
+    appearance: none;
+    cursor: pointer;
+    transition:
+        width 0.2s ease,
+        height 0.2s ease;
+}
+
+.ctrl[type="range"]:hover {
+    width: clamp(80px, 20vw, 120px); /* Responsive hover width */
+    height: var(--progress-bar-hover-height, 6px); /* Dynamic hover height */
+}
+
+.ctrl[type="range"]:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px var(--yt-secondary);
+}
+
+.ctrl[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: var(--slider-thumb-size, 12px);
+    height: var(--slider-thumb-size, 12px);
+    background: var(--yt-on-surface);
+    border-radius: 50%;
+    cursor: pointer;
+    border: 2px solid white;
+    opacity: 0;
+    transition:
+        opacity 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+        transform 0.15s cubic-bezier(0.4, 0, 0.2, 1),
+        box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    transform: scale(0.8) translateY(-50%);
+    box-shadow:
+        0 2px 8px rgba(0, 0, 0, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.ctrl[type="range"]:hover::-webkit-slider-thumb {
+    opacity: 1;
+    transform: scale(1) translateY(-50%);
+    box-shadow:
+        0 4px 12px rgba(0, 0, 0, 0.3),
+        0 0 0 2px rgba(62, 166, 255, 0.2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+
+.ctrl[type="range"]:active::-webkit-slider-thumb {
+    transform: scale(1.15) translateY(-50%);
+    box-shadow:
+        0 6px 20px rgba(0, 0, 0, 0.4),
+        0 0 0 3px rgba(62, 166, 255, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.4);
+}
+
+.ctrl[type="range"]::-moz-range-thumb {
+    width: var(--slider-thumb-size, 12px);
+    height: var(--slider-thumb-size, 12px);
+    background: var(--yt-on-surface);
+    border-radius: 50%;
+    cursor: pointer;
+    border: 2px solid white;
+    opacity: 0;
+    transition:
+        opacity 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+        transform 0.15s cubic-bezier(0.4, 0, 0.2, 1),
+        box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    transform: scale(0.8);
+    box-shadow:
+        0 2px 8px rgba(0, 0, 0, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.ctrl[type="range"]:hover::-moz-range-thumb {
+    opacity: 1;
+    transform: scale(1);
+    box-shadow:
+        0 4px 12px rgba(0, 0, 0, 0.3),
+        0 0 0 2px rgba(62, 166, 255, 0.2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+
+.ctrl[type="range"]:active::-moz-range-thumb {
+    transform: scale(1.15);
+    box-shadow:
+        0 6px 20px rgba(0, 0, 0, 0.4),
+        0 0 0 3px rgba(62, 166, 255, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.4);
+}
+
+/* Settings and menu buttons */
+.settings-button {
+    background: transparent;
+    border: none;
+    color: var(--yt-on-surface);
+    padding: 8px;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.settings-button:hover {
+    background: var(--yt-surface-variant);
+}
+
+/* Info bar below player */
+.bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 16px;
+    padding: 0 4px;
+}
+
+.chips {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.chip {
+    padding: 6px 12px;
+    background: var(--yt-surface);
+    border: 1px solid var(--yt-outline);
+    border-radius: 18px;
+    font-size: 13px;
+    color: var(--yt-on-surface);
+    cursor: pointer;
+    transition:
+        background 0.2s ease,
+        border-color 0.2s ease;
+}
+
+.chip:hover {
+    background: var(--yt-surface-variant);
+    border-color: var(--yt-tertiary);
+}
+
+.btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    border-radius: 18px;
+    background: var(--yt-surface);
+    color: var(--yt-on-surface);
+    border: 1px solid var(--yt-outline);
+    cursor: pointer;
+    font-size: 13px;
+    transition:
+        background 0.2s ease,
+        border-color 0.2s ease;
+}
+
+.btn:hover {
+    background: var(--yt-surface-variant);
+    border-color: var(--yt-tertiary);
+}
+
+.btn svg {
+    width: 20px;
+    height: 20px;
+    fill: currentColor;
+}
+
+/* State display */
+#state {
+    background: var(--yt-surface);
+    border: 1px solid var(--yt-outline);
+    border-radius: 8px;
+    padding: 16px;
+    margin-top: 16px;
+    font-family: "Roboto Mono", monospace;
+    font-size: 12px;
+    color: var(--yt-on-surface-variant);
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+/* Accessibility and Visual Feedback Styles */
+.keyboard-focused {
+    outline: 2px solid var(--yt-secondary);
+    outline-offset: 2px;
+}
+
+.feedback-overlay {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(0, 0, 0, 0.9);
+    color: white;
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    z-index: 10000;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    backdrop-filter: blur(4px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Touch-specific enhancements */
+@media (pointer: coarse) {
+    .progress-container {
+        min-height: 16px !important;
+    }
+
+    .ctrl.btn {
+        min-width: 48px !important;
+        min-height: 48px !important;
+    }
+
+    .controls-main {
+        padding: 16px !important;
+    }
+
+    .ctrl[type="range"]::-webkit-slider-thumb {
+        width: 20px !important;
+        height: 20px !important;
+    }
+
+    .ctrl[type="range"]::-moz-range-thumb {
+        width: 20px !important;
+        height: 20px !important;
+    }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+    .ctrl.btn {
+        border: 2px solid var(--yt-on-surface);
+    }
+
+    .progress-container {
+        border: 1px solid var(--yt-on-surface);
+    }
+
+    .scrubber {
+        border: 3px solid var(--yt-on-surface);
+        background: var(--yt-on-surface);
+    }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+    .ctrl.btn,
+    .progress-container,
+    .ctrl[type="range"]::-webkit-slider-thumb,
+    .ctrl[type="range"]::-moz-range-thumb {
+        transition: none !important;
+    }
+}
+
+/* Focus visible for better keyboard navigation */
+.ctrl.btn:focus-visible {
+    outline: 2px solid var(--yt-secondary);
+    outline-offset: 2px;
+}
+
+.progress-container:focus-visible {
+    outline: 2px solid var(--yt-secondary);
+    outline-offset: 2px;
+}
+
+/* Menu overlay - YouTube style */
+/* Menu overlay */
+.ap-overlay {
+    position: absolute;
+    inset: 0;
+    display: none;
+    z-index: 50;
+    backdrop-filter: blur(2px);
+}
+
+.ap-overlay.ap-overlay-open {
+    display: block;
+    animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+.ap-panel {
+    position: absolute;
+    right: 16px;
+    bottom: 60px;
+    min-width: 200px;
+    max-width: 300px;
+    background: var(--yt-surface);
+    border: 1px solid var(--yt-outline);
+    border-radius: 12px;
+    padding: 8px 0;
+    color: var(--yt-on-surface);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+    z-index: 41;
+    animation: slideIn 0.2s ease;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes slideInRight {
+    from {
+        opacity: 0;
+        transform: translateX(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.ap-subpanel {
+    position: absolute;
+    right: 220px;
+    bottom: 60px;
+    min-width: 180px;
+    background: var(--yt-surface);
+    border: 1px solid var(--yt-outline);
+    border-radius: 12px;
+    padding: 8px 0;
+    color: var(--yt-on-surface);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+    z-index: 42;
+    display: none;
+    opacity: 0;
+    transform: translateX(10px);
+    transition:
+        opacity 0.15s ease,
+        transform 0.15s ease;
+}
+
+.ap-subpanel[style*="display: block"] {
+    animation: slideIn 0.2s ease;
+}
+
+.ap-group-title {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--yt-on-surface-variant);
+    padding: 8px 16px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.ap-row {
+    display: flex;
+    width: 100%;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 16px;
+    background: transparent;
+    color: inherit;
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+    text-align: left;
+    transition: background 0.2s ease;
+    min-height: 40px;
+}
+
+.ap-row:hover {
+    background: var(--yt-surface-variant);
+}
+
+.ap-row:focus {
+    outline: none;
+    background: var(--yt-surface-variant);
+}
+
+.ap-left {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.ap-icon {
+    display: inline-flex;
+    width: 24px;
+    height: 24px;
+    align-items: center;
+    justify-content: center;
+    opacity: 0.9;
+    flex-shrink: 0;
+}
+
+.ap-right {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.ap-value {
+    color: var(--yt-on-surface-variant);
+    font-size: 14px;
+}
+
+.ap-arrow {
+    width: 0;
+    height: 0;
+    border-left: 5px solid var(--yt-on-surface-variant);
+    border-top: 4px solid transparent;
+    border-bottom: 4px solid transparent;
+}
+
+/* Toggle switches - YouTube style */
+.ap-toggle {
+    width: 44px;
+    height: 24px;
+    background: var(--yt-tertiary);
+    border-radius: 12px;
+    position: relative;
+    transition: background 0.2s ease;
+    cursor: pointer;
+}
+
+.ap-toggle::after {
+    content: "";
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: white;
+    transition: transform 0.2s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.ap-toggle-on {
+    background: var(--yt-secondary);
+}
+
+.ap-toggle-on::after {
+    transform: translateX(20px);
+}
+
+/* Checkboxes for select options */
+.ap-check {
+    width: 16px;
+    height: 16px;
+    border-radius: 3px;
+    border: 2px solid var(--yt-tertiary);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+.ap-check-on {
+    background: var(--yt-secondary);
+    border-color: var(--yt-secondary);
+}
+
+.ap-check-on::after {
+    content: "✓";
+    color: white;
+    font-size: 10px;
+    font-weight: bold;
+}
+
+/* Dropdown improvements */
+.ap-dropdown {
+    position: absolute;
+    background: var(--yt-surface);
+    border: 1px solid var(--yt-outline);
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    z-index: 50;
+}
+
+.ap-dropdown-open {
+    animation: dropdownSlideIn 0.2s ease;
+}
+
+@keyframes dropdownSlideIn {
+    from {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+/* Gestures overlays */
+.ap-g-center,
+.ap-g-left,
+.ap-g-right,
+.ap-g-vol,
+.ap-g-fs {
+    position: absolute;
+    pointer-events: none;
+    z-index: 55;
+}
+
+.ap-g-center {
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: 80px;
+    height: 80px;
+    display: none;
+    border-radius: 40px;
+    background: rgba(0, 0, 0, 0.7);
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(4px);
+}
+
+.ap-g-center svg {
+    width: 40px;
+    height: 40px;
+    color: white;
+}
+
+.ap-g-left,
+.ap-g-right {
+    top: 50%;
+    transform: translateY(-50%);
+    width: 60px;
+    height: 60px;
+    display: none;
+    border-radius: 30px;
+    background: rgba(0, 0, 0, 0.6);
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(4px);
+}
+
+.ap-g-left {
+    left: 20px;
+}
+
+.ap-g-right {
+    right: 20px;
+}
+
+.ap-g-left svg,
+.ap-g-right svg {
+    width: 30px;
+    height: 30px;
+    color: white;
+}
+
+.ap-g-vol {
+    left: 10%;
+    right: 10%;
+    bottom: 80px;
+    height: 4px;
+    border-radius: 2px;
+    overflow: hidden;
+    background: rgba(255, 255, 255, 0.2);
+    display: none;
+}
+
+.ap-g-volbar {
+    height: 100%;
+    background: var(--yt-secondary);
+    transition: width 0.1s ease;
+}
+
+.ap-g-fs {
+    pointer-events: auto;
+    right: 16px;
+    top: 16px;
+    width: 40px;
+    height: 40px;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: rgba(33, 33, 33, 0.8);
+    border: 1px solid var(--yt-outline);
+    z-index: 36;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.ap-g-fs:hover {
+    background: rgba(33, 33, 33, 0.95);
+}
+
+.ap-g-fs svg {
+    width: 20px;
+    height: 20px;
+    color: white;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .controls-row {
+        gap: 4px;
+    }
+
+    .time-display {
+        font-size: 12px;
+        margin: 0 4px;
+    }
+
+    .ctrl[type="range"] {
+        width: 60px;
+    }
+
+    .ctrl.btn svg {
+        width: 20px;
+        height: 20px;
+    }
+
+    .ap-panel {
+        right: 8px;
+        bottom: 60px;
+        min-width: 180px;
+    }
+}
+
+/* Fullscreen styles - Cross-browser compatibility */
+:fullscreen .player,
+:-webkit-full-screen .player,
+:-moz-full-screen .player,
+:-ms-fullscreen .player {
+    background: #000 !important;
+    border-radius: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    max-width: none !important;
+    max-height: none !important;
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    z-index: 2147483647 !important;
+    transform: translateZ(0) !important;
+    will-change: transform !important;
+}
+
+:fullscreen .video-container,
+:-webkit-full-screen .video-container,
+:-moz-full-screen .video-container,
+:-ms-fullscreen .video-container {
+    padding-bottom: 0;
+    width: 100vw !important;
+    height: 100vh !important;
+}
+
+:fullscreen .video-container video,
+:-webkit-full-screen .video-container video,
+:-moz-full-screen .video-container video,
+:-ms-fullscreen .video-container video {
+    width: 100vw !important;
+    height: 100vh !important;
+    object-fit: contain;
+}
+
+:fullscreen .controls,
+:-webkit-full-screen .controls,
+:-moz-full-screen .controls,
+:-ms-fullscreen .controls {
+    z-index: 2147483647 !important; /* Maximum z-index to override browser defaults */
+    position: fixed !important;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: linear-gradient(
+        to top,
+        rgba(0, 0, 0, 0.9),
+        transparent
+    ) !important;
+    padding: clamp(
+        16px,
+        3vw,
+        32px
+    ) !important; /* Responsive fullscreen padding */
+    transform: translateZ(0) !important; /* Force new stacking context */
+    will-change: transform !important;
+    /* Firefox-specific fixes */
+    -moz-transform: translateZ(0) !important;
+    -moz-will-change: transform !important;
+    /* Chrome/Safari-specific fixes */
+    -webkit-transform: translateZ(0) !important;
+    -webkit-will-change: transform !important;
+
+    /* Ensure minimum touch targets on mobile */
+    min-height: min(80px, 15vh);
+}
+
+:fullscreen .progress-container,
+:-webkit-full-screen .progress-container,
+:-moz-full-screen .progress-container,
+:-ms-fullscreen .progress-container {
+    z-index: 2147483646 !important; /* Just below controls */
+    position: fixed !important;
+    /* Bottom position will be calculated dynamically by JavaScript */
+    bottom: var(--fullscreen-progress-bottom, 68px) !important;
+    left: 0 !important;
+    right: 0 !important;
+    height: clamp(4px, 1.5vh, 8px) !important; /* Responsive height */
+    background: rgba(255, 255, 255, 0.1) !important;
+    transform: translateZ(0) !important; /* Force new stacking context */
+    will-change: transform !important;
+    /* Firefox-specific fixes */
+    -moz-transform: translateZ(0) !important;
+    -moz-will-change: transform !important;
+    /* Chrome/Safari-specific fixes */
+    -webkit-transform: translateZ(0) !important;
+    -webkit-will-change: transform !important;
+    /* Hide native controls completely */
+    pointer-events: auto !important;
+}
+
+:fullscreen .progress-container:hover,
+:-webkit-full-screen .progress-container:hover,
+:-moz-full-screen .progress-container:hover,
+:-ms-fullscreen .progress-container:hover {
+    height: 6px !important;
+}
+
+:fullscreen .ap-overlay,
+:-webkit-full-screen .ap-overlay,
+:-moz-full-screen .ap-overlay,
+:-ms-fullscreen .ap-overlay {
+    z-index: 2147483645 !important; /* Below progress bar but above video */
+    transform: translateZ(0); /* Force new stacking context */
+    will-change: transform; /* Optimize for animations */
+}
+
+:fullscreen .ap-panel,
+:-webkit-full-screen .ap-panel,
+:-moz-full-screen .ap-panel,
+:-ms-fullscreen .ap-panel {
+    z-index: 2147483647 !important; /* Same as controls */
+    transform: translateZ(0); /* Force new stacking context */
+    will-change: transform; /* Optimize for animations */
+}
+
+:fullscreen .ap-subpanel,
+:-webkit-full-screen .ap-subpanel,
+:-moz-full-screen .ap-subpanel,
+:-ms-fullscreen .ap-subpanel {
+    z-index: 2147483647 !important; /* Same as controls */
+    transform: translateZ(0); /* Force new stacking context */
+    will-change: transform; /* Optimize for animations */
+}
+
+:fullscreen .ap-g-fs,
+:-webkit-full-screen .ap-g-fs,
+:-moz-full-screen .ap-g-fs,
+:-ms-fullscreen .ap-g-fs {
+    z-index: 2147483648 !important;
+    display: none !important; /* Hide gesture fullscreen button in fullscreen */
+}
+
+/* Hide native browser controls in fullscreen */
+:fullscreen video,
+:-webkit-full-screen video,
+:-moz-full-screen video,
+:-ms-fullscreen video {
+    /* Force hide native controls */
+    controlslist: nodownload nofullscreen !important;
+    -webkit-controls-list: nodownload nofullscreen !important;
+    mozcontrolslist: nodownload nofullscreen !important;
+}
+
+/* Loading states */
+.loading {
+    position: relative;
+}
+
+.loading::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 40px;
+    height: 40px;
+    margin: -20px 0 0 -20px;
+    border: 3px solid var(--yt-outline);
+    border-top-color: var(--yt-secondary);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Error states */
+.error {
+    background: rgba(255, 0, 0, 0.1);
+    border-color: var(--yt-primary);
+}
+
+.error-message {
+    color: var(--yt-primary);
+    padding: 16px;
+    text-align: center;
+    font-size: 14px;
+}
+
+/* Accessibility */
+.ctrl.btn:focus,
+.btn:focus,
+.ap-row:focus {
+    outline: 2px solid var(--yt-secondary);
+    outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}

@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Menu & Dropdown Example</title>
+    <link rel="stylesheet" href="../styles/player.css">
+    <style>
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: #121212;
+            color: #eee;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 800px;
+        }
+
+        h1 {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .player-wrapper {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 16/9;
+            background: #000;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+        }
+
+        video {
+            width: 100%;
+            height: 100%;
+        }
+
+        .controls-bar {
+            margin-top: 15px;
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            background: #1e1e1e;
+            padding: 10px;
+            border-radius: 8px;
+        }
+
+        button.btn {
+            background: #333;
+            border: 1px solid #444;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        button.btn:hover {
+            background: #444;
+        }
+
+        /* Custom dropdown style for the standalone example */
+        .custom-dropdown-trigger {
+            position: relative;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <h1>Player Menu & Dropdown Demo</h1>
+
+        <div class="player-wrapper" id="player-container">
+            <video id="video" playsinline>
+                <source src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
+                    type="video/mp4">
+            </video>
+        </div>
+
+        <div class="controls-bar">
+            <button id="settings-btn" class="btn">Settings (Menu)</button>
+
+            <div class="custom-dropdown-trigger">
+                <button id="more-btn" class="btn">More (Dropdown)</button>
+                <div id="more-dropdown-container"></div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { Player, Menu, Dropdown } from "../dist/index.js";
+
+        // 1. Initialize Player
+        const video = document.getElementById('video');
+        const player = new Player({
+            media: video,
+            autoplay: false,
+        });
+
+        // 2. Configure Menu Items (Groups)
+        const menuGroups = [
+            {
+                label: "Playback",
+                items: [
+                    {
+                        type: "toggle",
+                        id: "autoplay",
+                        label: "Autoplay",
+                        value: false, // Initial state
+                        onChange: (val) => {
+                            console.log("Autoplay toggled:", val);
+                        }
+                    },
+                    {
+                        type: "select",
+                        id: "speed",
+                        label: "Speed",
+                        value: "1",
+                        options: [
+                            { value: "0.5", label: "0.5x" },
+                            { value: "1", label: "Normal" },
+                            { value: "1.5", label: "1.5x" },
+                            { value: "2", label: "2x" }
+                        ],
+                        onChange: (val) => {
+                            console.log("Speed changed to:", val);
+                            player.setRate(parseFloat(val));
+                        }
+                    }
+                ]
+            },
+            {
+                label: "Quality",
+                items: [
+                    {
+                        type: "select",
+                        id: "quality",
+                        label: "Quality",
+                        value: "auto",
+                        options: [
+                            { value: "auto", label: "Auto" },
+                            { value: "1080p", label: "1080p" },
+                            { value: "720p", label: "720p" },
+                            { value: "480p", label: "480p" }
+                        ],
+                        onChange: (val) => {
+                            console.log("Quality set to:", val);
+                        }
+                    }
+                ]
+            }
+        ];
+
+        // 3. Create the Menu instance
+        // We attach it to the player container so it overlays the video
+        const container = document.getElementById('player-container');
+        const menu = new Menu(container, menuGroups, { className: 'my-custom-menu' });
+
+        // Toggle menu with button
+        document.getElementById('settings-btn').addEventListener('click', (e) => {
+            e.stopPropagation(); // Prevent immediate close
+            menu.toggle();
+        });
+
+        // Play/Pause to demonstrate player works
+        video.addEventListener('click', () => {
+            if (player.getState().paused) player.play();
+            else player.pause();
+        });
+
+
+        // 4. Create a standalone Dropdown example
+        // This demonstrates using the Dropdown class directly for custom UI
+        const dropdownContainer = document.getElementById('more-dropdown-container');
+        const dropdown = new Dropdown('custom-dropdown');
+
+        // Create content for the dropdown
+        const ddContent = document.createElement('div');
+        ddContent.style.padding = '10px';
+        ddContent.style.background = '#2a2a2a';
+        ddContent.style.border = '1px solid #444';
+        ddContent.style.borderRadius = '4px';
+        ddContent.style.minWidth = '150px';
+
+        const item1 = document.createElement('div');
+        item1.textContent = "Share";
+        item1.style.padding = "5px";
+        item1.style.cursor = "pointer";
+        item1.onclick = () => alert("Share clicked!");
+
+        const item2 = document.createElement('div');
+        item2.textContent = "Report";
+        item2.style.padding = "5px";
+        item2.style.cursor = "pointer";
+        item2.onclick = () => alert("Report clicked!");
+
+        ddContent.appendChild(item1);
+        ddContent.appendChild(item2);
+
+        dropdown.getElement().appendChild(ddContent);
+
+        // Position the dropdown (absolute)
+        dropdown.getElement().style.position = 'absolute';
+        dropdown.getElement().style.top = '100%';
+        dropdown.getElement().style.right = '0';
+        dropdown.getElement().style.zIndex = '100';
+
+        dropdownContainer.appendChild(dropdown.getElement());
+
+        document.getElementById('more-btn').addEventListener('click', (e) => {
+            e.stopPropagation();
+            dropdown.toggle();
+        });
+
+        // Close menu/dropdown when clicking elsewhere handled by their internal logic mostly,
+        // but Menu has an overlay. Dropdown needs external click handler often if not using overlay.
+        document.addEventListener('click', (e) => {
+            if (!document.getElementById('more-btn').contains(e.target) &&
+                !dropdown.getElement().contains(e.target)) {
+                dropdown.close();
+            }
+        });
+
+    </script>
+</body>
+
+</html>
