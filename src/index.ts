@@ -28,3 +28,4 @@ export type {
 export { createHlsPlugin } from "./plugins/hls";
 export type { HlsPluginOptions } from "./plugins/hls";
 export { createAssPlugin } from "./plugins/ass/index";
+export { createAssJsPlugin, AssJsPluginOptions } from "./plugins/assjs/index";

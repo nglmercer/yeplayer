@@ -59,5 +59,8 @@
     "hls.js": {
       "optional": true
     }
+  },
+  "dependencies": {
+    "assjs": "^0.1.4"
   }
 }

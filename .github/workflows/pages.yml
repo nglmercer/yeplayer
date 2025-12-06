@@ -1,0 +1,76 @@
+name: Deploy Examples to GitHub Pages
+
+on:
+  push:
+    branches: ["main"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Build Library
+        run: npm run build
+
+      - name: Prepare Site Directory
+        run: |
+          mkdir -p site
+          
+          # Copy core directories
+          cp -r dist site/dist
+          cp -r examples site/examples
+          cp -r styles site/styles
+          
+          # Create node_modules structure for dependencies referenced in examples
+          mkdir -p site/node_modules/hls.js/dist
+          mkdir -p site/node_modules/assjs/dist
+          
+          # Copy exact files needed or whole dist folders of libs
+          cp -r node_modules/hls.js/dist/* site/node_modules/hls.js/dist/
+          cp -r node_modules/assjs/dist/* site/node_modules/assjs/dist/
+
+          # Create an index.html redirection or listing
+          echo '<!DOCTYPE html><html><head><title>Agnostic Player Examples</title><style>body{font-family:sans-serif;padding:2rem;line-height:1.6}a{display:block;margin:0.5rem 0;color:#007bff;text-decoration:none}a:hover{text-decoration:underline}</style></head><body><h1>Agnostic Player Examples</h1><ul>' > site/index.html
+          echo '<li><a href="examples/basic.html">Basic Player</a></li>' >> site/index.html
+          echo '<li><a href="examples/ui.html">UI & Plugins</a></li>' >> site/index.html
+          echo '<li><a href="examples/hls.html">HLS Streaming</a></li>' >> site/index.html
+          echo '<li><a href="examples/ass.html">Advanced Subtitles (JASSUB)</a></li>' >> site/index.html
+          echo '<li><a href="examples/assjs.html">Advanced Subtitles (ASS.js)</a></li>' >> site/index.html
+          echo '</ul></body></html>' >> site/index.html
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: './site'
+
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
