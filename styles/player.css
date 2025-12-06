@@ -103,14 +103,13 @@ body {
 
     /* Exact grid layout for precise alignment */
     display: grid;
-    grid-template-rows: var(--progress-bar-row-height, auto) var(
-            --controls-row-height,
-            auto
-        );
+    grid-template-rows: var(--progress-bar-row-height, auto) var(--controls-row-height,
+            auto);
     grid-template-columns: auto 1fr auto;
     gap: 0;
     align-items: center;
-    min-height: 0; /* Allow grid to shrink */
+    min-height: 0;
+    /* Allow grid to shrink */
     box-sizing: border-box;
 }
 
@@ -149,7 +148,8 @@ body {
     background: rgba(255, 255, 255, 0.1);
     cursor: pointer;
     transition: height 0.2s ease;
-    z-index: 41; /* Within controls grid */
+    z-index: 41;
+    /* Within controls grid */
     /* Ensure exact positioning within grid cell */
     margin: 0;
     padding: 0;
@@ -162,7 +162,8 @@ body {
 .video-container {
     position: relative;
     width: 100%;
-    padding-bottom: 56.25%; /* 16:9 aspect ratio */
+    padding-bottom: 56.25%;
+    /* 16:9 aspect ratio */
     background: #000;
 }
 
@@ -197,12 +198,10 @@ body {
     top: 0;
     left: 0;
     height: 100%;
-    background: linear-gradient(
-        to right,
-        var(--yt-scrubber) 0%,
-        var(--yt-scrubber) 99%,
-        rgba(255, 0, 0, 0.8) 100%
-    );
+    background: linear-gradient(to right,
+            var(--yt-scrubber) 0%,
+            var(--yt-scrubber) 99%,
+            rgba(255, 0, 0, 0.8) 100%);
     transition: width 0.1s linear;
     /* Add subtle glow effect */
     box-shadow: 0 0 4px rgba(255, 0, 0, 0.2);
@@ -277,7 +276,8 @@ body {
     background: transparent;
     border: none;
     color: var(--yt-on-surface);
-    padding: clamp(6px, 1.5vw, 10px); /* Responsive padding */
+    padding: clamp(6px, 1.5vw, 10px);
+    /* Responsive padding */
     border-radius: 50%;
     display: inline-flex;
     align-items: center;
@@ -339,7 +339,8 @@ body {
 }
 
 .ctrl.btn svg {
-    width: clamp(16px, 4vw, 24px); /* Responsive SVG size */
+    width: clamp(16px, 4vw, 24px);
+    /* Responsive SVG size */
     height: clamp(16px, 4vw, 24px);
     fill: currentColor;
 }
@@ -352,14 +353,16 @@ body {
 }
 
 .ctrl.btn.play-pause svg {
-    width: clamp(20px, 5vw, 28px); /* Larger for play button */
+    width: clamp(20px, 5vw, 28px);
+    /* Larger for play button */
     height: clamp(20px, 5vw, 28px);
 }
 
 /* Time display */
 .time-display {
     color: var(--yt-on-surface);
-    font-size: clamp(11px, 2.5vw, 14px); /* Responsive font size */
+    font-size: clamp(11px, 2.5vw, 14px);
+    /* Responsive font size */
     font-family: "Roboto Mono", monospace;
     margin: 0 clamp(4px, 1.5vw, 12px);
     user-select: none;
@@ -375,7 +378,8 @@ body {
 }
 
 .ctrl[type="range"] {
-    width: clamp(60px, 15vw, 100px); /* Responsive width */
+    width: clamp(60px, 15vw, 100px);
+    /* Responsive width */
     height: 4px;
     background: var(--yt-outline);
     border-radius: 2px;
@@ -389,8 +393,10 @@ body {
 }
 
 .ctrl[type="range"]:hover {
-    width: clamp(80px, 20vw, 120px); /* Responsive hover width */
-    height: var(--progress-bar-hover-height, 6px); /* Dynamic hover height */
+    width: clamp(80px, 20vw, 120px);
+    /* Responsive hover width */
+    height: var(--progress-bar-hover-height, 6px);
+    /* Dynamic hover height */
 }
 
 .ctrl[type="range"]:focus {
@@ -412,7 +418,7 @@ body {
         opacity 0.2s cubic-bezier(0.4, 0, 0.2, 1),
         transform 0.15s cubic-bezier(0.4, 0, 0.2, 1),
         box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-    transform: scale(0.8) translateY(-50%);
+    transform: scale(0.8);
     box-shadow:
         0 2px 8px rgba(0, 0, 0, 0.3),
         inset 0 1px 0 rgba(255, 255, 255, 0.2);
@@ -420,7 +426,7 @@ body {
 
 .ctrl[type="range"]:hover::-webkit-slider-thumb {
     opacity: 1;
-    transform: scale(1) translateY(-50%);
+    transform: scale(1);
     box-shadow:
         0 4px 12px rgba(0, 0, 0, 0.3),
         0 0 0 2px rgba(62, 166, 255, 0.2),
@@ -428,7 +434,7 @@ body {
 }
 
 .ctrl[type="range"]:active::-webkit-slider-thumb {
-    transform: scale(1.15) translateY(-50%);
+    transform: scale(1.15);
     box-shadow:
         0 6px 20px rgba(0, 0, 0, 0.4),
         0 0 0 3px rgba(62, 166, 255, 0.3),
@@ -628,6 +634,7 @@ body {
 
 /* Reduced motion support */
 @media (prefers-reduced-motion: reduce) {
+
     .ctrl.btn,
     .progress-container,
     .ctrl[type="range"]::-webkit-slider-thumb,
@@ -666,6 +673,7 @@ body {
     from {
         opacity: 0;
     }
+
     to {
         opacity: 1;
     }
@@ -692,6 +700,7 @@ body {
         opacity: 0;
         transform: translateY(10px);
     }
+
     to {
         opacity: 1;
         transform: translateY(0);
@@ -703,6 +712,7 @@ body {
         opacity: 0;
         transform: translateX(10px);
     }
+
     to {
         opacity: 1;
         transform: translateX(0);
@@ -877,6 +887,7 @@ body {
         opacity: 0;
         transform: scale(0.95);
     }
+
     to {
         opacity: 1;
         transform: scale(1);
@@ -1055,22 +1066,21 @@ body {
 :-webkit-full-screen .controls,
 :-moz-full-screen .controls,
 :-ms-fullscreen .controls {
-    z-index: 2147483647 !important; /* Maximum z-index to override browser defaults */
+    z-index: 2147483647 !important;
+    /* Maximum z-index to override browser defaults */
     position: fixed !important;
     bottom: 0;
     left: 0;
     right: 0;
-    background: linear-gradient(
-        to top,
-        rgba(0, 0, 0, 0.9),
-        transparent
-    ) !important;
-    padding: clamp(
-        16px,
-        3vw,
-        32px
-    ) !important; /* Responsive fullscreen padding */
-    transform: translateZ(0) !important; /* Force new stacking context */
+    background: linear-gradient(to top,
+            rgba(0, 0, 0, 0.9),
+            transparent) !important;
+    padding: clamp(16px,
+            3vw,
+            32px) !important;
+    /* Responsive fullscreen padding */
+    transform: translateZ(0) !important;
+    /* Force new stacking context */
     will-change: transform !important;
     /* Firefox-specific fixes */
     -moz-transform: translateZ(0) !important;
@@ -1087,15 +1097,18 @@ body {
 :-webkit-full-screen .progress-container,
 :-moz-full-screen .progress-container,
 :-ms-fullscreen .progress-container {
-    z-index: 2147483646 !important; /* Just below controls */
+    z-index: 2147483646 !important;
+    /* Just below controls */
     position: fixed !important;
     /* Bottom position will be calculated dynamically by JavaScript */
     bottom: var(--fullscreen-progress-bottom, 68px) !important;
     left: 0 !important;
     right: 0 !important;
-    height: clamp(4px, 1.5vh, 8px) !important; /* Responsive height */
+    height: clamp(4px, 1.5vh, 8px) !important;
+    /* Responsive height */
     background: rgba(255, 255, 255, 0.1) !important;
-    transform: translateZ(0) !important; /* Force new stacking context */
+    transform: translateZ(0) !important;
+    /* Force new stacking context */
     will-change: transform !important;
     /* Firefox-specific fixes */
     -moz-transform: translateZ(0) !important;
@@ -1118,27 +1131,36 @@ body {
 :-webkit-full-screen .ap-overlay,
 :-moz-full-screen .ap-overlay,
 :-ms-fullscreen .ap-overlay {
-    z-index: 2147483645 !important; /* Below progress bar but above video */
-    transform: translateZ(0); /* Force new stacking context */
-    will-change: transform; /* Optimize for animations */
+    z-index: 2147483645 !important;
+    /* Below progress bar but above video */
+    transform: translateZ(0);
+    /* Force new stacking context */
+    will-change: transform;
+    /* Optimize for animations */
 }
 
 :fullscreen .ap-panel,
 :-webkit-full-screen .ap-panel,
 :-moz-full-screen .ap-panel,
 :-ms-fullscreen .ap-panel {
-    z-index: 2147483647 !important; /* Same as controls */
-    transform: translateZ(0); /* Force new stacking context */
-    will-change: transform; /* Optimize for animations */
+    z-index: 2147483647 !important;
+    /* Same as controls */
+    transform: translateZ(0);
+    /* Force new stacking context */
+    will-change: transform;
+    /* Optimize for animations */
 }
 
 :fullscreen .ap-subpanel,
 :-webkit-full-screen .ap-subpanel,
 :-moz-full-screen .ap-subpanel,
 :-ms-fullscreen .ap-subpanel {
-    z-index: 2147483647 !important; /* Same as controls */
-    transform: translateZ(0); /* Force new stacking context */
-    will-change: transform; /* Optimize for animations */
+    z-index: 2147483647 !important;
+    /* Same as controls */
+    transform: translateZ(0);
+    /* Force new stacking context */
+    will-change: transform;
+    /* Optimize for animations */
 }
 
 :fullscreen .ap-g-fs,
@@ -1146,7 +1168,8 @@ body {
 :-moz-full-screen .ap-g-fs,
 :-ms-fullscreen .ap-g-fs {
     z-index: 2147483648 !important;
-    display: none !important; /* Hide gesture fullscreen button in fullscreen */
+    display: none !important;
+    /* Hide gesture fullscreen button in fullscreen */
 }
 
 /* Hide native browser controls in fullscreen */

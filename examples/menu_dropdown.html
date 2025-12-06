@@ -73,6 +73,15 @@
             position: relative;
         }
     </style>
+    <script src=" https://cdn.jsdelivr.net/npm/hls.js@1.6.15/dist/hls.min.js "></script>
+
+    <script type="importmap">
+    {
+        "imports": {
+            "hls.js": "https://cdn.jsdelivr.net/npm/hls.js@latest/+esm"
+        }
+    }
+    </script>
 </head>
 
 <body>
@@ -98,7 +107,7 @@
     </div>
 
     <script type="module">
-        import { Player, Menu, Dropdown } from "../dist/index.js";
+        import { Player, Menu, Dropdown, Controls, Gestures } from "../dist/index.js";
 
         // 1. Initialize Player
         const video = document.getElementById('video');
@@ -106,6 +115,9 @@
             media: video,
             autoplay: false,
         });
+
+        // Initialize Gestures
+        const gestures = new Gestures(document.getElementById('player-container'), player);
 
         // 2. Configure Menu Items (Groups)
         const menuGroups = [
@@ -162,26 +174,30 @@
         ];
 
         // 3. Create the Menu instance
-        // We attach it to the player container so it overlays the video
         const container = document.getElementById('player-container');
         const menu = new Menu(container, menuGroups, { className: 'my-custom-menu' });
 
-        // Toggle menu with button
-        document.getElementById('settings-btn').addEventListener('click', (e) => {
-            e.stopPropagation(); // Prevent immediate close
+        // Add Controls with custom options (example)
+        const controls = new Controls(player, container, {
+            icons: {
+                // Example: Customizing the play icon (making it green for demo)
+                play: '<path d="M8 5v14l11-7z" fill="#4caf50" />'
+            }
+        });
+
+        // Link internal settings button to menu
+        controls.getSettingsButton().addEventListener('click', (e) => {
+            e.stopPropagation();
             menu.toggle();
         });
 
-        // Play/Pause to demonstrate player works
-        video.addEventListener('click', () => {
-            if (player.getState().paused) player.play();
-            else player.pause();
+        // Add a "More" (Dropdown) button to the right of controls
+        const moreIcon = '<path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/>';
+        const moreBtn = controls.addButton('right', moreIcon, () => {
+            dropdown.toggle();
         });
 
-
-        // 4. Create a standalone Dropdown example
-        // This demonstrates using the Dropdown class directly for custom UI
-        const dropdownContainer = document.getElementById('more-dropdown-container');
+        // 4. Create a standalone Dropdown example, now integrated
         const dropdown = new Dropdown('custom-dropdown');
 
         // Create content for the dropdown
@@ -209,26 +225,33 @@
 
         dropdown.getElement().appendChild(ddContent);
 
-        // Position the dropdown (absolute)
+        // Position the dropdown (absolute) relative to the container/button
+        // We attach it to the container, and we'll need to position it manually or using simple CSS
         dropdown.getElement().style.position = 'absolute';
-        dropdown.getElement().style.top = '100%';
-        dropdown.getElement().style.right = '0';
+        dropdown.getElement().style.bottom = '60px'; // Approx height of controls
+        dropdown.getElement().style.right = '50px'; // Approx position of more button
         dropdown.getElement().style.zIndex = '100';
 
-        dropdownContainer.appendChild(dropdown.getElement());
+        container.appendChild(dropdown.getElement());
 
-        document.getElementById('more-btn').addEventListener('click', (e) => {
-            e.stopPropagation();
-            dropdown.toggle();
-        });
-
-        // Close menu/dropdown when clicking elsewhere handled by their internal logic mostly,
-        // but Menu has an overlay. Dropdown needs external click handler often if not using overlay.
+        // Close menu/dropdown when clicking elsewhere
         document.addEventListener('click', (e) => {
-            if (!document.getElementById('more-btn').contains(e.target) &&
+            if (!moreBtn.contains(e.target) &&
                 !dropdown.getElement().contains(e.target)) {
                 dropdown.close();
             }
+        });
+
+        // Toggle menu with external button (keep if needed, otherwise optional)
+        document.getElementById('settings-btn').addEventListener('click', (e) => {
+            e.stopPropagation();
+            menu.toggle();
+        });
+
+        // External dropdown button (keep for demo or remove if fully integrated)
+        document.getElementById('more-btn').addEventListener('click', (e) => {
+            e.stopPropagation();
+            // Logic for external button if still needed...
         });
 
     </script>
