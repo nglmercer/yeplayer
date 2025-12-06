@@ -422,6 +422,22 @@ body {
     box-shadow:
         0 2px 8px rgba(0, 0, 0, 0.3),
         inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    /* Ensure the thumb is always on top */
+    position: relative;
+    z-index: 2;
+}
+
+.ctrl[type="range"] {
+    -webkit-appearance: none;
+    appearance: none;
+    background: linear-gradient(to right,
+            var(--yt-on-surface) 0%,
+            var(--yt-on-surface) var(--volume-percent, 100%),
+            rgba(255, 255, 255, 0.2) var(--volume-percent, 100%),
+            rgba(255, 255, 255, 0.2) 100%);
+    height: 4px;
+    border-radius: 2px;
+    cursor: pointer;
 }
 
 .ctrl[type="range"]:hover::-webkit-slider-thumb {
@@ -954,22 +970,7 @@ body {
     color: white;
 }
 
-.ap-g-vol {
-    left: 10%;
-    right: 10%;
-    bottom: 80px;
-    height: 4px;
-    border-radius: 2px;
-    overflow: hidden;
-    background: rgba(255, 255, 255, 0.2);
-    display: none;
-}
 
-.ap-g-volbar {
-    height: 100%;
-    background: red;
-    transition: width 0.1s ease;
-}
 
 .ap-g-fs {
     pointer-events: auto;

@@ -9,15 +9,12 @@ export class Gestures {
   private center: HTMLElement;
   private left: HTMLElement;
   private right: HTMLElement;
-  private vol: HTMLElement;
   private fsBtn: HTMLButtonElement;
   private lastTap = 0;
   private lastTapX = 0;
   private tapTimer: any = null;
   private pressTimer: any = null;
   private pressedBoost = false;
-  private startY = 0;
-  private adjustingVol = false;
 
   constructor(root: HTMLElement, player: Player, opts: GestureOptions = {}) {
     this.root = root;
@@ -26,32 +23,45 @@ export class Gestures {
     this.center = document.createElement('div');
     this.left = document.createElement('div');
     this.right = document.createElement('div');
-    this.vol = document.createElement('div');
     this.fsBtn = document.createElement('button');
+
     this.center.className = 'ap-g-center';
     this.left.className = 'ap-g-left';
     this.right.className = 'ap-g-right';
-    this.vol.className = 'ap-g-vol';
     this.fsBtn.className = 'ap-g-fs';
+
     this.fsBtn.innerHTML = this.icon('maximize');
     this.fsBtn.type = 'button';
     this.fsBtn.onclick = () => { const s = player.getState().fullscreen; if (s) player.exitFullscreen(); else player.requestFullscreen(); };
+
     root.appendChild(this.center);
     root.appendChild(this.left);
     root.appendChild(this.right);
-    root.appendChild(this.vol);
     root.appendChild(this.fsBtn);
+
     this.bind();
+    this.bindKeyboard();
   }
 
   private bind() {
     const area = this.root.querySelector('video') || this.root;
+
+    // Listen to player volume changes to update feedback
+    this.player.on('volumechange', (vol, muted) => {
+      // Only show feedback if we are actively adjusting or if it's an external change that warrants feedback
+      // To avoid spamming, we might want to check if it's a user interaction.
+      // But for now, let's show it.
+      if (muted || vol === 0) {
+        this.showCenter('volumeMute');
+      } else if (vol < 0.5) {
+        this.showCenter('volumeLow');
+      } else {
+        this.showCenter('volumeHigh');
+      }
+    });
+
     area.addEventListener('pointerdown', e => {
-      this.startY = e.clientY;
-      const rect = (area as HTMLElement).getBoundingClientRect();
-      const x = e.clientX - rect.left;
-      const y = e.clientY - rect.top;
-      this.adjustingVol = x > rect.width * 0.5;
+      // Clear timers
       clearTimeout(this.pressTimer);
       this.pressTimer = setTimeout(() => {
         this.pressedBoost = true;
@@ -60,15 +70,9 @@ export class Gestures {
         this.showCenter(rate0 < 1.5 ? 'boost' : 'pause');
       }, 400);
     });
-    area.addEventListener('pointermove', e => {
-      if (!this.adjustingVol) return;
-      const dy = this.startY - e.clientY;
-      const delta = dy / 300;
-      const v = Math.max(0, Math.min(1, this.player.getState().volume + delta));
-      this.player.setVolume(v);
-      this.showVolume(v);
-      this.startY = e.clientY;
-    });
+
+    // Volume drag removed
+
     area.addEventListener('pointerup', e => {
       clearTimeout(this.pressTimer);
       if (this.pressedBoost) {
@@ -81,6 +85,7 @@ export class Gestures {
       const x = e.clientX - rect.left;
       const dt = now - this.lastTap;
       const dbl = dt < 300 && Math.abs(x - this.lastTapX) < 80;
+
       if (dbl) {
         if (x < rect.width * 0.4) this.skip('left');
         else if (x > rect.width * 0.6) this.skip('right');
@@ -90,11 +95,72 @@ export class Gestures {
       this.lastTap = now; this.lastTapX = x;
       clearTimeout(this.tapTimer);
       this.tapTimer = setTimeout(() => {
+        // Single tap behavior (toggle play)
         const paused = this.player.getState().paused;
         if (paused) this.player.play(); else this.player.pause();
-        // Feedback handled by Controls or other UI
-        // this.showCenter(paused ? 'play' : 'pause'); 
       }, 250);
+    });
+  }
+
+  private bindKeyboard() {
+    document.addEventListener('keydown', (e) => {
+      const target = e.target as HTMLElement;
+      const tag = target.tagName ? target.tagName.toLowerCase() : '';
+
+      if (tag === 'input' || tag === 'textarea' || target.isContentEditable) return;
+
+      // If focused element is not body or player container, maybe we should still handle it
+      // unless it has specific key handling?
+
+      const s = this.player.getState();
+
+      switch (e.key.toLowerCase()) {
+        case ' ':
+        case 'k':
+          e.preventDefault();
+          if (s.paused) this.player.play(); else this.player.pause();
+          break;
+        case 'j':
+          e.preventDefault();
+          this.player.seek(s.currentTime - 10);
+          this.skip('left');
+          break;
+        case 'l':
+          e.preventDefault();
+          this.player.seek(s.currentTime + 10);
+          this.skip('right');
+          break;
+        case 'arrowleft':
+          e.preventDefault();
+          this.player.seek(s.currentTime - 5);
+          break;
+        case 'arrowright':
+          e.preventDefault();
+          this.player.seek(s.currentTime + 5);
+          break;
+        case 'arrowup':
+          e.preventDefault();
+          this.player.setVolume(Math.min(1, s.volume + 0.05));
+          break;
+        case 'arrowdown':
+          e.preventDefault();
+          this.player.setVolume(Math.max(0, s.volume - 0.05));
+          break;
+        case 'm':
+          e.preventDefault();
+          this.player.setMuted(!s.muted);
+          break;
+        case 'f':
+          e.preventDefault();
+          if (s.fullscreen) this.player.exitFullscreen(); else this.player.requestFullscreen();
+          break;
+      }
+
+      if (e.key >= '0' && e.key <= '9') {
+        e.preventDefault();
+        const pct = parseInt(e.key) * 10;
+        this.player.seek((pct / 100) * s.duration);
+      }
     });
   }
 
@@ -108,20 +174,20 @@ export class Gestures {
     setTimeout(() => { el.style.display = 'none'; }, 500);
   }
 
-  private showCenter(kind: 'play' | 'pause' | 'boost') {
+  private showCenter(kind: string) {
     this.center.innerHTML = this.icon(kind);
     this.center.style.display = 'flex';
-    setTimeout(() => { this.center.style.display = 'none'; }, 600);
+
+    // Reset animation/timeout
+    this.center.style.animation = 'none';
+    this.center.offsetHeight; /* trigger reflow */
+    this.center.style.animation = 'fadeIn 0.2s'; // Assuming CSS has this or we rely on display
+
+    clearTimeout((this.center as any)._t);
+    (this.center as any)._t = setTimeout(() => { this.center.style.display = 'none'; }, 600);
   }
 
-  private showVolume(v: number) {
-    this.vol.innerHTML = `<div class="ap-g-volbar" style="width:${Math.round(v * 100)}%"></div>`;
-    this.vol.style.display = 'block';
-    clearTimeout((this.vol as any)._t);
-    (this.vol as any)._t = setTimeout(() => { this.vol.style.display = 'none'; }, 800);
-  }
-
-  private icon(name: 'play' | 'pause' | 'forward' | 'back' | 'maximize' | 'boost') {
+  private icon(name: string) {
     switch (name) {
       case 'play': return '<svg viewBox="0 0 24 24"><path fill="currentColor" d="M8 5v14l11-7-11-7Z"/></svg>';
       case 'pause': return '<svg viewBox="0 0 24 24"><path fill="currentColor" d="M6 5h4v14H6zm8 0h4v14h-4z"/></svg>';
@@ -129,6 +195,10 @@ export class Gestures {
       case 'back': return '<svg viewBox="0 0 24 24"><path fill="currentColor" d="M20 5v14l-8-7 8-7Zm-9 0v14L3 12l8-7Z"/></svg>';
       case 'maximize': return '<svg viewBox="0 0 24 24"><path fill="currentColor" d="M4 4h7v2H6v5H4V4Zm13 0h3v7h-2V6h-5V4h4Zm-2 16h-7v-2h5v-5h2v7Zm-11-7h2v5h5v2H4v-7Z"/></svg>';
       case 'boost': return '<svg viewBox="0 0 24 24"><path fill="currentColor" d="M12 2l4 8H8l4-8Zm0 20l-4-8h8l-4 8Z"/></svg>';
+      case 'volumeMute': return '<svg viewBox="0 0 24 24"><path fill="currentColor" d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73 4.27 3zM12 4L9.91 6.09 12 8.18V4z"/></svg>';
+      case 'volumeLow': return '<svg viewBox="0 0 24 24"><path fill="currentColor" d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/></svg>';
+      case 'volumeHigh': return '<svg viewBox="0 0 24 24"><path fill="currentColor" d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>';
+      default: return '';
     }
   }
 }

@@ -270,6 +270,7 @@ export class Controls {
 
         this.player.on('volumechange', (vol, muted) => {
             this.volRange.value = vol.toString();
+            this.volRange.style.setProperty('--volume-percent', `${vol * 100}%`);
             this.muteBtn.innerHTML = '';
             this.muteBtn.appendChild(createSVG(muted || vol === 0 ? this.icons.volumeMute : this.icons.volumeOn));
         });
@@ -294,6 +295,11 @@ export class Controls {
 
         // Initial state
         this.updatePlayBtn(this.player.getState().paused);
+        const s = this.player.getState();
+        this.volRange.value = s.volume.toString();
+        this.volRange.style.setProperty('--volume-percent', `${s.volume * 100}%`);
+        this.muteBtn.innerHTML = '';
+        this.muteBtn.appendChild(createSVG(s.muted || s.volume === 0 ? this.icons.volumeMute : this.icons.volumeOn));
     }
 
     private togglePlay() {
