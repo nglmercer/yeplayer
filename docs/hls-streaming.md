@@ -31,6 +31,19 @@ player.setSource('https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8');
 player.play();
 ```
 
-## Quality Control
+## Supported Features
 
-The HLS plugin automatically registers a `QualityPlugin`. This allows the UI (like Settings menu) to automatically show quality selectors (Auto, 1080p, 720p, etc.).
+- **Adaptive Bitrate**: Automatically switches quality based on network conditions.
+- **Quality Manual Control**: Users can select specific resolutions (e.g., 1080p, 720p).
+- **Subtitles/Captions**: Support for WebVTT and embedded subtitles.
+- **Audio Tracks**: Support for multiple audio languages (e.g., dubbing).
+
+## Plugin API
+
+When you use the HLS plugin, it registers several providers with the core player API:
+
+- **QualityProvider**: Read available levels (`getAvailableQualities`) and set quality (`setQuality`).
+- **TextTrackProvider**: Read subtitle tracks (`getTextTracks`) and set active caption (`setActiveTrack`).
+- **AudioTrackProvider**: Read audio languages (`getAudioTracks`) and switch language (`setActiveTrack`).
+
+These providers can be accessed via `player.getAPI().getQualityProvider()`, etc., allowing you to build custom menus or settings panels.

@@ -27,3 +27,4 @@ export type {
 // HLS Plugin
 export { createHlsPlugin } from "./plugins/hls";
 export type { HlsPluginOptions } from "./plugins/hls";
+export { createAssPlugin } from "./plugins/ass/index";

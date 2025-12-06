@@ -19,23 +19,53 @@ const controls = new Controls(player, container, {
 
 ## Settings Menu
 
-The `Menu` and `Dropdown` components allow for complex settings interactions.
+The `Menu` component allows for creating a detailed settings panel (like YouTube's gear icon menu).
 
+### 1. Initialize the Menu
 ```typescript
-import { Menu, Dropdown } from 'ytplayer';
+import { Menu } from 'ytplayer';
 
-// Create a main menu
-const menu = new Menu(document.body);
+const menu = new Menu(container, [
+    { label: 'Quality', items: [] },
+    { label: 'Speed', items: [] }
+]);
 
-// Create the dropdown logic
-const dropdown = new Dropdown(menu, player);
-
-// Hook it up to the settings button in controls
-const settingsBtn = controls.getSettingsButton();
-settingsBtn.onclick = (e) => {
+// Hook up to the controls button
+controls.getSettingsButton().onclick = (e) => {
     e.stopPropagation();
-    dropdown.toggle(settingsBtn);
+    refreshMenuData(); // Update data before showing
+    menu.toggle();
 };
 ```
 
-The Menu automatically populates with available plugins (Quality, Audio Tracks, etc.) via the `PluginAPI`.
+### 2. Populate Data from Plugins
+
+The menu does not auto-populate. You should fetch data from the `PluginAPI` and format it for the menu.
+
+```typescript
+function refreshMenuData() {
+    const api = player.getAPI();
+    const groups = [];
+
+    // Example: Add Quality Options
+    const qProvider = api.getQualityProvider();
+    if (qProvider) {
+        groups.push({
+            label: 'Quality',
+            items: [{
+                type: 'select',
+                id: 'quality',
+                label: 'Quality',
+                value: qProvider.getCurrentQuality()?.id,
+                options: qProvider.getAvailableQualities().map(q => ({
+                    value: q.id,
+                    label: q.height + 'p'
+                })),
+                onChange: (val) => qProvider.setQuality(val)
+            }]
+        });
+    }
+
+    menu.setGroups(groups);
+}
+```
