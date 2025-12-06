@@ -4,46 +4,31 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Agnostic Player HLS Example</title>
-    <!-- Basic styles -->
+    <title>YTPlayer - HLS Example</title>
     <link rel="stylesheet" href="../styles/player.css">
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@1.6.15/dist/hls.min.js"></script>
     <style>
         body {
-            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            font-family: system-ui, sans-serif;
             background: #0f0f0f;
             color: #eee;
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
             min-height: 100vh;
             margin: 0;
+            padding: 20px;
         }
 
-        .container {
-            width: 90%;
-            max-width: 900px;
-            background: #1e1e1e;
-            padding: 2rem;
-            border-radius: 12px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-        }
-
-        h1 {
-            margin-top: 0;
-            margin-bottom: 1.5rem;
-            font-weight: 300;
-            text-align: center;
-        }
-
-        .player-wrapper {
-            position: relative;
+        .wrapper {
             width: 100%;
+            max-width: 900px;
             aspect-ratio: 16/9;
+            position: relative;
             background: #000;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
             border-radius: 8px;
             overflow: hidden;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
         }
 
         video {
@@ -51,228 +36,143 @@
             height: 100%;
         }
 
-        .controls {
-            margin-top: 1.5rem;
+        .controls-external {
+            margin-top: 20px;
             display: flex;
-            gap: 1rem;
-            flex-wrap: wrap;
-            align-items: center;
-            justify-content: center;
+            gap: 10px;
         }
 
-        button,
-        select {
-            padding: 0.5rem 1rem;
-            border-radius: 6px;
-            border: 1px solid #333;
-            background: #2a2a2a;
-            color: white;
-            font-size: 0.9rem;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        button:hover,
-        select:hover {
+        button {
+            padding: 8px 16px;
             background: #333;
-            border-color: #444;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
         }
 
-        button.primary {
-            background: #3b82f6;
-            border-color: #3b82f6;
-        }
-
-        button.primary:hover {
-            background: #2563eb;
-            border-color: #2563eb;
-        }
-
-        .status {
-            margin-top: 1rem;
-            font-size: 0.8rem;
-            color: #888;
-            text-align: center;
-            font-family: monospace;
+        button:hover {
+            background: #444;
         }
     </style>
-    <script type="importmap">
-    {
-        "imports": {
-            "hls.js": "https://cdn.jsdelivr.net/npm/hls.js@latest/+esm"
-        }
-    }
-    </script>
-    <script src=" https://cdn.jsdelivr.net/npm/hls.js@1.6.15/dist/hls.min.js "></script>
 </head>
 
 <body>
-    <div class="container">
-        <h1>HLS Plugin Demo</h1>
-        <div class="player-wrapper">
-            <video id="video" playsinline crossorigin="anonymous"></video>
-        </div>
-
-        <div class="controls">
-            <select id="stream-select" style="width: 100%; margin-bottom: 1rem;">
-                <option value="https://bitdash-a.akamaihd.net/content/sintel/hls/playlist.m3u8">Sintel
-                    (Multi-Audio, 4K) - Bitmovin</option>
-                <option
-                    value="https://devstreaming-cdn.apple.com/videos/streaming/examples/bipbop_adv_example_hevc/master.m3u8">
-                    Bip-Bop Advanced (HEVC/Multi-Audio) - Apple</option>
-                <option value="https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8">Big Buck Bunny - Mux</option>
-                <option value="https://devstreaming-cdn.apple.com/videos/streaming/examples/adv_dv_atmos/main.m3u8">
-                    Becoming You (Dolby/Multi-Lang) - Apple</option>
-                <option value="https://mtoczko.github.io/hls-test-streams/test-gap/playlist.m3u8">Gap Test -
-                    Community</option>
-            </select>
-
-            <button id="load-stream" class="primary">Load Selected Stream</button>
-            <button id="toggle-play">Play/Pause</button>
-
-            <div style="width: 100%; border-top: 1px solid #333; margin: 1rem 0;"></div>
-
-            <label>Quality:</label>
-            <select id="quality-select">
-                <option value="-1">Auto</option>
-            </select>
-
-            <label>Audio:</label>
-            <select id="audio-select">
-                <option value="-1">Default</option>
-            </select>
-        </div>
-        <div id="status" class="status">Ready</div>
-        <div id="debug-info"
-            style="margin-top: 1rem; font-family: monospace; font-size: 0.7rem; color: #666; white-space: pre-wrap;">
-        </div>
+    <div class="wrapper" id="container">
+        <video id="video" playsinline crossorigin="anonymous"></video>
     </div>
-    <script>
-        if (Hls.isSupported()) {
-            console.log("hls.js is supported");
-        }
-    </script>
+
+    <div class="controls-external">
+        <button onclick="loadSource('https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8')">Load Mux Stream</button>
+        <button onclick="loadSource('https://bitdash-a.akamaihd.net/content/sintel/hls/playlist.m3u8')">Load Sintel
+            (4K)</button>
+    </div>
+
     <script type="module">
-        import { Player, Menu, Dropdown, Controls, Gestures } from "../dist/index.js";
+        import { Player, Controls, Gestures, Menu, Dropdown, createHlsPlugin } from "../dist/index.js";
 
         const video = document.getElementById('video');
-        const statusEl = document.getElementById('status');
-        const debugEl = document.getElementById('debug-info');
+        const container = document.getElementById('container');
 
-        function log(msg) {
-            statusEl.textContent = msg;
-            console.log(msg);
-            debugEl.textContent = msg + '\n' + debugEl.textContent.substring(0, 500);
-        }
+        const player = new Player({ media: video });
 
-        const player = new Player({
-            media: video,
-            autoplay: false,
-        });
+        // Initialize UI
+        const controls = new Controls(player, container);
+        new Gestures(container, player);
 
-        // Initialize HLS Plugin
+        // HLS Plugin
         player.usePlugin(createHlsPlugin({
-            hlsConfig: {
-                debug: false
-            }
+            hls: window.Hls,
+            hlsConfig: { debug: false }
         })).then(() => {
-            log("HLS Plugin initialized. Auto-loading first stream...");
-            // Auto-load the first stream
-            const streamSelect = document.getElementById('stream-select');
-            if (streamSelect && streamSelect.value) {
-                log("Setting source: " + streamSelect.value);
-                player.setSource(streamSelect.value);
-                //player.play().catch(e => log("Autoplay prevented: " + e.message));
-            }
+            console.log("HLS Plugin Loaded");
+            loadSource('https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8');
         });
 
-        // Event Listeners
-        player.events.on('ready', () => log('Player ready (Metadata loaded)'));
-        player.events.on('play', () => log('Event: Play'));
-        player.events.on('pause', () => log('Event: Pause'));
-        player.events.on('error', (e) => log('Error: ' + e.message));
-        player.events.on('sourcechange', (url) => log('Source changed: ' + url));
+        // Setup Settings Menu
+        const menu = new Menu(container, [
+            { label: 'Quality', items: [] },
+            { label: 'Audio', items: [] }
+        ]);
 
-        const qualitySelect = document.getElementById('quality-select');
-        const audioSelect = document.getElementById('audio-select');
+        controls.getSettingsButton().onclick = (e) => {
+            e.stopPropagation();
+            refreshMenu();
+            menu.toggle();
+        };
 
-        // Update lists
-        const updateLists = () => {
+        // Helper to populate menu from plugin API
+        function refreshMenu() {
             const api = player.getAPI();
-            const qProvider = api.getQualityProvider();
-            const aProvider = api.getAudioTrackProvider();
+            const groups = [];
 
+            // Quality
+            const qProvider = api.getQualityProvider();
             if (qProvider) {
                 const current = qProvider.getCurrentQuality();
                 const levels = qProvider.getAvailableQualities();
-
-                // Keep selected value if possible
-                const oldVal = qualitySelect.value;
-                qualitySelect.innerHTML = '<option value="-1">Auto</option>';
-
-                levels.forEach(level => {
-                    const opt = document.createElement('option');
-                    opt.value = level.id;
-                    const label = level.height ? `${level.height}p` : `Level ${level.id}`;
-                    opt.textContent = `${label} (${Math.round(level.bitrate / 1024)} kbps)`;
-                    qualitySelect.appendChild(opt);
+                groups.push({
+                    label: 'Quality',
+                    items: levels.map(l => ({
+                        type: 'select',
+                        id: 'quality',
+                        label: 'Quality', // This is group label in select
+                        value: current?.id || '-1',
+                        options: levels.map(x => ({
+                            value: x.id,
+                            label: x.height ? `${x.height}p` : `Level ${x.id}`
+                        })),
+                        onChange: (val) => qProvider.setQuality(val)
+                    }))
                 });
-
-                if (current && current.id !== -1) qualitySelect.value = current.id;
             }
 
+            // Audio
+            const aProvider = api.getAudioTrackProvider();
             if (aProvider) {
                 const tracks = aProvider.getAudioTracks();
-                audioSelect.innerHTML = '';
-                tracks.forEach(track => {
-                    const opt = document.createElement('option');
-                    opt.value = track.id;
-                    opt.textContent = `${track.label} (${track.language})`;
-                    opt.selected = track.enabled;
-                    audioSelect.appendChild(opt);
-                });
+                if (tracks.length > 0) {
+                    // Find enabled track
+                    const active = tracks.find(t => t.enabled);
+                    groups.push({
+                        label: 'Audio',
+                        items: tracks.length > 0 ? [{
+                            type: 'select',
+                            id: 'audio',
+                            label: 'Audio Track',
+                            value: active ? active.id : tracks[0].id,
+                            options: tracks.map(t => ({ value: t.id, label: `${t.label} (${t.language})` })),
+                            onChange: (val) => aProvider.setActiveTrack(val)
+                        }] : []
+                    });
+                }
             }
-        };
 
-        player.events.on('ready', updateLists);
-        player.events.on('qualitychange', (l) => {
-            log(`Quality changed: ${l.height}p`);
-            updateLists(); // Update selection in UI
-        });
-        player.events.on('audioplayerchange', (t) => {
-            log(`Audio changed: ${t.label}`);
-            updateLists();
-        });
+            // Speed
+            groups.push({
+                label: 'Playback',
+                items: [{
+                    type: 'select',
+                    id: 'speed',
+                    label: 'Speed',
+                    value: player.getState().playbackRate.toString(),
+                    options: [
+                        { value: '0.5', label: '0.5x' },
+                        { value: '1', label: 'Normal' },
+                        { value: '1.5', label: '1.5x' },
+                        { value: '2', label: '2x' }
+                    ],
+                    onChange: (v) => player.setRate(parseFloat(v))
+                }]
+            });
 
-        // Controls
-        document.getElementById('load-stream').addEventListener('click', () => {
-            const url = document.getElementById('stream-select').value;
-            log("Loading: " + url);
+            menu.setGroups(groups);
+        }
+
+        window.loadSource = (url) => {
             player.setSource(url);
-            player.play().catch(e => log("Play failed: " + e));
-
-            // Poll for updates briefly in case events are missed
-            setTimeout(updateLists, 2000);
-        });
-
-        document.getElementById('toggle-play').addEventListener('click', () => {
-            if (player.getState().paused) {
-                player.play();
-            } else {
-                player.pause();
-            }
-        });
-
-        qualitySelect.addEventListener('change', (e) => {
-            const api = player.getAPI();
-            api.getQualityProvider()?.setQuality(e.target.value);
-        });
-
-        audioSelect.addEventListener('change', (e) => {
-            const api = player.getAPI();
-            api.getAudioTrackProvider()?.setActiveTrack(e.target.value);
-        });
-
+            player.play();
+        };
     </script>
 </body>
 

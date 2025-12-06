@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YTPlayer - UI Components</title>
+    <link rel="stylesheet" href="../styles/player.css">
+    <style>
+        body {
+            font-family: system-ui, sans-serif;
+            background: #111;
+            color: #eee;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .wrapper {
+            width: 100%;
+            max-width: 800px;
+            aspect-ratio: 16/9;
+            position: relative;
+            background: #000;
+            border-radius: 8px;
+            overflow: hidden;
+            margin-bottom: 2rem;
+        }
+
+        video {
+            width: 100%;
+            height: 100%;
+        }
+
+        section {
+            max-width: 800px;
+            width: 100%;
+            margin-bottom: 2rem;
+            background: #222;
+            padding: 1rem;
+            border-radius: 8px;
+        }
+
+        h2 {
+            margin-top: 0;
+            border-bottom: 1px solid #333;
+            padding-bottom: 0.5rem;
+        }
+
+        code {
+            background: #333;
+            padding: 2px 4px;
+            border-radius: 4px;
+            font-family: monospace;
+        }
+
+        .demo-controls {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        button.action-btn {
+            padding: 8px 16px;
+            background: #3b82f6;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>UI Components Demo</h1>
+
+    <div class="wrapper" id="container">
+        <video id="video" src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4"
+            playsinline></video>
+    </div>
+
+    <section>
+        <h2>Custom Menu & Dropdown</h2>
+        <p>Click the <b>Settings</b> icon in the player to see the generated menu. Click the <b>More</b> (three dots)
+            icon to see a custom dropdown.</p>
+        <div class="demo-controls">
+            <button class="action-btn" id="ext-toggle">Toggle Menu Externally</button>
+        </div>
+    </section>
+
+    <script type="module">
+        import { Player, Menu, Dropdown, Controls, Gestures } from "../dist/index.js";
+
+        const video = document.getElementById('video');
+        const container = document.getElementById('container');
+
+        const player = new Player({ media: video });
+        const gestures = new Gestures(container, player);
+
+        // Custom Controls with added button
+        const controls = new Controls(player, container);
+
+        // 1. Setup Main Menu
+        const menu = new Menu(container, [
+            {
+                label: "Playback Settings",
+                items: [
+                    {
+                        type: "toggle",
+                        id: "loop",
+                        label: "Loop Video",
+                        value: false,
+                        onChange: (val) => {
+                            video.loop = val;
+                            console.log("Loop:", val);
+                        }
+                    },
+                    {
+                        type: "select",
+                        id: "speed",
+                        label: "Playback Speed",
+                        value: "1",
+                        options: [
+                            { value: "0.5", label: "Slow (0.5x)" },
+                            { value: "1", label: "Normal" },
+                            { value: "2", label: "Fast (2x)" }
+                        ],
+                        onChange: (val) => player.setRate(parseFloat(val))
+                    }
+                ]
+            },
+            {
+                label: "Actions",
+                items: [
+                    {
+                        type: "action",
+                        id: "info",
+                        label: "Show Stats for Nerds",
+                        onClick: () => console.log("Video log: ", video)
+                    }
+                ]
+            }
+        ]);
+
+        // Connect Settings button
+        controls.getSettingsButton().onclick = (e) => {
+            e.stopPropagation();
+            menu.toggle();
+        };
+
+        // 2. Setup Dropdown (Custom "More" menu)
+        const moreIcon = '<svg viewBox="0 0 24 24"><path fill="currentColor" d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/></svg>';
+        const dropdown = new Dropdown();
+        const ddEl = dropdown.getElement();
+
+        // Custom content for dropdown
+        ddEl.style.background = '#222';
+        ddEl.style.border = '1px solid #333';
+        ddEl.style.padding = '8px';
+        ddEl.innerHTML = `
+            <div style="padding: 8px; cursor: pointer; color: #fff; hover:bg-gray-700">Share</div>
+            <div style="padding: 8px; cursor: pointer; color: #f88;">Report Issue</div>
+        `;
+
+        // Important: Append dropdown to keys logic or container
+        // We'll append to container and position it
+        ddEl.style.position = 'absolute';
+        ddEl.style.bottom = '60px';
+        ddEl.style.right = '60px'; // Offset from right edge
+        ddEl.style.zIndex = '100';
+        container.appendChild(ddEl);
+
+        // Add button to controls
+        const moreBtn = controls.addButton('right', moreIcon, () => {
+            dropdown.toggle();
+        });
+
+        // Close on click outside
+        document.addEventListener('click', (e) => {
+            if (!ddEl.contains(e.target) && !moreBtn.contains(e.target)) {
+                dropdown.close();
+            }
+        });
+
+        // External Toggle
+        document.getElementById('ext-toggle').onclick = (e) => {
+            e.stopPropagation();
+            menu.toggle();
+        };
+
+    </script>
+</body>
+
+</html>

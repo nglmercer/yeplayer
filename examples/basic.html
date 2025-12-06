@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YTPlayer - Basic Example</title>
+    <link rel="stylesheet" href="../styles/player.css">
+    <style>
+        body {
+            font-family: -apple-system, system-ui, sans-serif;
+            display: grid;
+            place-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        .wrapper {
+            width: 90%;
+            max-width: 900px;
+            aspect-ratio: 16/9;
+            position: relative;
+        }
+
+        video {
+            width: 100%;
+            height: 100%;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="wrapper" id="container">
+        <video id="video" src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
+            playsinline></video>
+    </div>
+
+    <script type="module">
+        import { Player, Controls, Gestures } from "../dist/index.js";
+
+        const video = document.getElementById('video');
+        const container = document.getElementById('container');
+
+        // 1. Initialize Player
+        const player = new Player({
+            media: video,
+            autoplay: false
+        });
+
+        // 2. Add Controls
+        new Controls(player, container);
+
+        // 3. Add Gestures (Mobile/Keyboard)
+        new Gestures(container, player);
+    </script>
+</body>
+
+</html>

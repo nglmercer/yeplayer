@@ -1,4 +1,3 @@
-import Hls from "hls.js";
 import type {
     IPlayer,
     PluginAPI,
@@ -11,8 +10,8 @@ import type {
 } from "../../types";
 
 export interface HlsPluginOptions {
-    hlsConfig?: any; // Hls.Config
-    Hls?: typeof Hls;
+    hlsConfig?: any; // Hls.Config type
+    hls?: any; // Injected Hls constructor to avoid direct dependency
 }
 
 export function createHlsPlugin(options: HlsPluginOptions = {}): PluginManifest {
@@ -29,7 +28,7 @@ export function createHlsPlugin(options: HlsPluginOptions = {}): PluginManifest 
 }
 
 class HlsPlugin implements PlayerPluginInstance {
-    private hls: Hls | null = null;
+    private hlsInstance: any | null = null;
     private qualityCallback: ((level: QualityLevel) => void) | null = null;
     private audioTrackCallback: ((track: AudioTrack) => void) | null = null;
     private cleanupListeners: (() => void)[] = [];
@@ -45,27 +44,28 @@ class HlsPlugin implements PlayerPluginInstance {
     install() {
         console.log("HLS Plugin: Installing...");
         // Attempt to locate Hls constructor
-        let HlsClass = this.options.Hls || Hls;
+        // 1. Injected via options
+        // 2. Global window.Hls
+        let HlsClass = this.options.hls;
 
-        // Fallback to window.Hls if not found in imports
         if (!HlsClass && typeof window !== 'undefined' && (window as any).Hls) {
             console.log("HLS Plugin: Using global window.Hls");
             HlsClass = (window as any).Hls;
         }
 
-        console.log("HLS Plugin: HlsClass found?", !!HlsClass, HlsClass);
+        console.log("HLS Plugin: HlsClass found?", !!HlsClass);
 
         const video = this.player.media as HTMLVideoElement;
 
         // Check if we should use hls.js
         if (HlsClass && HlsClass.isSupported()) {
             console.log("HLS Plugin: Hls is supported, creating instance");
-            this.hls = new HlsClass(this.options.hlsConfig);
+            this.hlsInstance = new HlsClass(this.options.hlsConfig);
             this.setupQualityProvider();
             this.setupAudioTrackProvider();
 
             // Handle HLS events
-            this.hls!.on(HlsClass.Events.MANIFEST_PARSED, (event: any, data: any) => {
+            this.hlsInstance!.on(HlsClass.Events.MANIFEST_PARSED, (event: any, data: any) => {
                 console.log("HLS: Manifest parsed", data);
                 // Trigger quality update
                 if (this.qualityCallback) {
@@ -74,11 +74,11 @@ class HlsPlugin implements PlayerPluginInstance {
                 }
             });
 
-            this.hls!.on(HlsClass.Events.ERROR, (event: any, data: any) => {
+            this.hlsInstance!.on(HlsClass.Events.ERROR, (event: any, data: any) => {
                 console.error("HLS Error:", data);
             });
 
-            this.hls!.on(HlsClass.Events.LEVEL_SWITCHED, (event: any, data: any) => {
+            this.hlsInstance!.on(HlsClass.Events.LEVEL_SWITCHED, (event: any, data: any) => {
                 if (this.qualityCallback) {
                     const current = this.getCurrentQuality();
                     if (current) this.qualityCallback(current);
@@ -88,14 +88,14 @@ class HlsPlugin implements PlayerPluginInstance {
             // Handle source changes from the player
             const removeListener = this.player.on("sourcechange", (url: string) => {
                 if (url.includes(".m3u8")) {
-                    if (this.hls) {
+                    if (this.hlsInstance) {
                         console.log("HLS: Loading source", url);
-                        this.hls.loadSource(url);
-                        this.hls.attachMedia(video);
+                        this.hlsInstance.loadSource(url);
+                        this.hlsInstance.attachMedia(video);
                     }
                 } else {
-                    if (this.hls) {
-                        this.hls.detachMedia();
+                    if (this.hlsInstance) {
+                        this.hlsInstance.detachMedia();
                     }
                 }
             });
@@ -103,8 +103,8 @@ class HlsPlugin implements PlayerPluginInstance {
 
             // Initial check
             if (video.src && video.src.includes(".m3u8")) {
-                this.hls!.loadSource(video.src);
-                this.hls!.attachMedia(video);
+                this.hlsInstance!.loadSource(video.src);
+                this.hlsInstance!.attachMedia(video);
             }
         } else if (
             video.canPlayType("application/vnd.apple.mpegurl")
@@ -117,8 +117,8 @@ class HlsPlugin implements PlayerPluginInstance {
     private setupQualityProvider() {
         const provider: QualityPlugin = {
             getAvailableQualities: () => {
-                if (!this.hls) return [];
-                return this.hls.levels.map((level: any, index: number) => ({
+                if (!this.hlsInstance) return [];
+                return this.hlsInstance.levels.map((level: any, index: number) => ({
                     id: index,
                     label: level.height ? `${level.height}p` : `Level ${index}`,
                     bitrate: level.bitrate,
@@ -131,8 +131,8 @@ class HlsPlugin implements PlayerPluginInstance {
                 return this.getCurrentQuality();
             },
             setQuality: (levelId: string | number) => {
-                if (!this.hls) return;
-                this.hls.currentLevel = Number(levelId);
+                if (!this.hlsInstance) return;
+                this.hlsInstance.currentLevel = Number(levelId);
             },
             onQualityChange: (callback) => {
                 this.qualityCallback = callback;
@@ -144,23 +144,23 @@ class HlsPlugin implements PlayerPluginInstance {
     private setupAudioTrackProvider() {
         const provider: AudioTrackPlugin = {
             getAudioTracks: () => {
-                if (!this.hls) return [];
-                return this.hls!.audioTracks.map((track: any, index: number) => ({
+                if (!this.hlsInstance) return [];
+                return this.hlsInstance!.audioTracks.map((track: any, index: number) => ({
                     id: String(track.id || index),
                     label: track.name || track.lang || `Track ${index}`,
                     language: track.lang || 'unknown',
-                    enabled: this.hls ? this.hls.audioTrack === index : false
+                    enabled: this.hlsInstance ? this.hlsInstance.audioTrack === index : false
                 }));
             },
             setActiveTrack: (trackId: string) => {
-                if (!this.hls) return;
-                this.hls.audioTrack = Number(trackId);
+                if (!this.hlsInstance) return;
+                this.hlsInstance.audioTrack = Number(trackId);
             },
             getActiveTrack: () => {
-                if (!this.hls) return null;
-                const index = this.hls.audioTrack;
+                if (!this.hlsInstance) return null;
+                const index = this.hlsInstance.audioTrack;
                 if (index === -1) return null;
-                const track = this.hls.audioTracks[index];
+                const track = this.hlsInstance.audioTracks[index];
                 if (!track) return null;
                 return {
                     id: String(track.id || index),
@@ -177,9 +177,9 @@ class HlsPlugin implements PlayerPluginInstance {
         this.api.registerAudioTrackProvider(provider);
 
         // Listen for changes
-        if (this.hls) {
-            const HlsClass = this.options.Hls || Hls || (window as any).Hls;
-            this.hls.on(HlsClass.Events.AUDIO_TRACK_SWITCHED, (event: any, data: any) => {
+        if (this.hlsInstance) {
+            const HlsClass = this.options.hls || (window as any).Hls;
+            this.hlsInstance.on(HlsClass.Events.AUDIO_TRACK_SWITCHED, (event: any, data: any) => {
                 console.log("HLS: Audio track switched", data);
                 if (this.audioTrackCallback) {
                     const track = provider.getActiveTrack();
@@ -191,13 +191,13 @@ class HlsPlugin implements PlayerPluginInstance {
 
     // Helper to get current quality level object
     private getCurrentQuality(): QualityLevel | null {
-        if (!this.hls) return null;
-        if (this.hls.autoLevelEnabled) {
+        if (!this.hlsInstance) return null;
+        if (this.hlsInstance.autoLevelEnabled) {
             return { id: -1, label: "Auto" };
         }
-        const index = this.hls.currentLevel;
-        if (index >= 0 && index < this.hls.levels.length) {
-            const level = this.hls.levels[index];
+        const index = this.hlsInstance.currentLevel;
+        if (index >= 0 && index < this.hlsInstance.levels.length) {
+            const level = this.hlsInstance.levels[index];
             return {
                 id: index,
                 label: level.height ? `${level.height}p` : `Level ${index}`,
@@ -213,9 +213,9 @@ class HlsPlugin implements PlayerPluginInstance {
     dispose() {
         this.cleanupListeners.forEach((fn) => fn());
         this.cleanupListeners = [];
-        if (this.hls) {
-            this.hls.destroy();
-            this.hls = null;
+        if (this.hlsInstance) {
+            this.hlsInstance.destroy();
+            this.hlsInstance = null;
         }
     }
 }
