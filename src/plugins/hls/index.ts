@@ -1,3 +1,5 @@
+import type Hls from "hls.js";
+import type { HlsConfig } from "hls.js";
 import type {
     IPlayer,
     PluginAPI,
@@ -10,8 +12,8 @@ import type {
 } from "../../types";
 
 export interface HlsPluginOptions {
-    hlsConfig?: any; // Hls.Config type
-    hls?: any; // Injected Hls constructor to avoid direct dependency
+    hlsConfig?: Partial<HlsConfig>;
+    hls?: typeof Hls;
 }
 
 export function createHlsPlugin(options: HlsPluginOptions = {}): PluginManifest {
@@ -28,7 +30,7 @@ export function createHlsPlugin(options: HlsPluginOptions = {}): PluginManifest 
 }
 
 class HlsPlugin implements PlayerPluginInstance {
-    private hlsInstance: any | null = null;
+    private hlsInstance: Hls | null = null;
     private qualityCallback: ((level: QualityLevel) => void) | null = null;
     private audioTrackCallback: ((track: AudioTrack) => void) | null = null;
     private cleanupListeners: (() => void)[] = [];
@@ -50,7 +52,7 @@ class HlsPlugin implements PlayerPluginInstance {
 
         if (!HlsClass && typeof window !== 'undefined' && (window as any).Hls) {
             console.log("HLS Plugin: Using global window.Hls");
-            HlsClass = (window as any).Hls;
+            HlsClass = (window as any).Hls as typeof Hls;
         }
 
         console.log("HLS Plugin: HlsClass found?", !!HlsClass);

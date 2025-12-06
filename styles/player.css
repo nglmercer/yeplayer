@@ -606,6 +606,19 @@ body {
     border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
+.ap-big-play {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    background: rgba(0, 0, 0, 0.6);
+    padding: 10px 20px;
+    border-radius: 8px;
+    transform: translate(-50%, -50%);
+    transition: opacity 0.2s ease;
+    backdrop-filter: blur(4px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
 /* Touch-specific enhancements */
 @media (pointer: coarse) {
     .progress-container {

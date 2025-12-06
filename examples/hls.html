@@ -58,13 +58,15 @@
 </head>
 
 <body>
-    <div class="wrapper" id="container">
-        <video id="video" playsinline crossorigin="anonymous"></video>
+    <div class="player wrapper" id="container">
+        <div class="video-container">
+            <video id="video" playsinline crossorigin="anonymous"></video>
+        </div>
     </div>
 
     <div class="controls-external">
-        <button onclick="loadSource('https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8')">Load Mux Stream</button>
-        <button onclick="loadSource('https://bitdash-a.akamaihd.net/content/sintel/hls/playlist.m3u8')">Load Sintel
+        <button onclick="loadSource(1)">Load Mux Stream</button>
+        <button onclick="loadSource(2)">Load Sintel
             (4K)</button>
     </div>
 
@@ -113,18 +115,44 @@
                 const levels = qProvider.getAvailableQualities();
                 groups.push({
                     label: 'Quality',
-                    items: levels.map(l => ({
+                    items: [{
                         type: 'select',
                         id: 'quality',
-                        label: 'Quality', // This is group label in select
+                        label: 'Quality',
                         value: current?.id || '-1',
                         options: levels.map(x => ({
                             value: x.id,
                             label: x.height ? `${x.height}p` : `Level ${x.id}`
                         })),
                         onChange: (val) => qProvider.setQuality(val)
-                    }))
+                    }]
                 });
+            }
+
+            // Subtitles
+            const tProvider = api.getTextTrackProvider();
+            if (tProvider) {
+                const tracks = tProvider.getTextTracks();
+                if (tracks.length > 0) {
+                    const active = tProvider.getActiveTrack();
+                    groups.push({
+                        label: 'Subtitles',
+                        items: [{
+                            type: 'select',
+                            id: 'subtitles',
+                            label: 'Subtitles',
+                            value: active ? active.id : '-1',
+                            options: [
+                                { value: '-1', label: 'Off' },
+                                ...tracks.map(t => ({
+                                    value: t.id,
+                                    label: `${t.label || 'Unknown'} (${t.language})`
+                                }))
+                            ],
+                            onChange: (val) => tProvider.setActiveTrack(val === '-1' ? null : val)
+                        }]
+                    });
+                }
             }
 
             // Audio
@@ -136,14 +164,14 @@
                     const active = tracks.find(t => t.enabled);
                     groups.push({
                         label: 'Audio',
-                        items: tracks.length > 0 ? [{
+                        items: [{
                             type: 'select',
                             id: 'audio',
                             label: 'Audio Track',
                             value: active ? active.id : tracks[0].id,
                             options: tracks.map(t => ({ value: t.id, label: `${t.label} (${t.language})` })),
                             onChange: (val) => aProvider.setActiveTrack(val)
-                        }] : []
+                        }]
                     });
                 }
             }
@@ -170,7 +198,15 @@
         }
 
         window.loadSource = (url) => {
-            player.setSource(url);
+            if (url === 1) {
+                player.setSource('https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8');
+            }
+            if (url === 2) {
+                player.setSource('https://bitdash-a.akamaihd.net/content/sintel/hls/playlist.m3u8');
+            }
+            if (typeof url === "string") {
+                player.setSource(url);
+            }
             player.play();
         };
     </script>

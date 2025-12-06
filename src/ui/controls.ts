@@ -71,6 +71,7 @@ export class Controls {
 
     // Feedback
     private feedbackOverlay!: HTMLElement;
+    private bigPlayBtn!: HTMLElement;
     private feedbackTimeout: any;
 
     constructor(player: Player, container: HTMLElement, options: ControlsOptions = {}) {
@@ -94,6 +95,12 @@ export class Controls {
         // But the constructor takes container. Let's append to container if we can, or controls parent.
         // Actually, let's append to the passed container (which is player wrapper)
         this.player.getContainer().appendChild(this.feedbackOverlay);
+
+        // Big Play Button (Initial/Paused State)
+        this.bigPlayBtn = document.createElement("div");
+        this.bigPlayBtn.className = "ap-big-play";
+        this.bigPlayBtn.appendChild(createSVG(this.icons.playBig, 64)); // Size 64
+        this.player.getContainer().appendChild(this.bigPlayBtn);
 
         // Progress
         const progRow = document.createElement("div");
@@ -185,6 +192,12 @@ export class Controls {
     }
 
     private bindEvents() {
+        // Big Play Button
+        this.bigPlayBtn.onclick = (e) => {
+            e.stopPropagation();
+            this.togglePlay();
+        };
+
         // Play/Pause override to show feedback
         this.playBtn.onclick = (e) => {
             e.stopPropagation(); // prevent bubbling to container click if any
@@ -262,10 +275,12 @@ export class Controls {
         this.player.on('play', () => {
             this.updatePlayBtn(false);
             this.showFeedback(this.icons.playBig);
+            this.bigPlayBtn.style.display = 'none';
         });
         this.player.on('pause', () => {
             this.updatePlayBtn(true);
             this.showFeedback(this.icons.pauseBig);
+            this.bigPlayBtn.style.display = '';
         });
 
         this.player.on('volumechange', (vol, muted) => {
@@ -294,7 +309,9 @@ export class Controls {
         });
 
         // Initial state
-        this.updatePlayBtn(this.player.getState().paused);
+        const paused = this.player.getState().paused;
+        this.updatePlayBtn(paused);
+        this.bigPlayBtn.style.display = paused ? '' : 'none';
         const s = this.player.getState();
         this.volRange.value = s.volume.toString();
         this.volRange.style.setProperty('--volume-percent', `${s.volume * 100}%`);
