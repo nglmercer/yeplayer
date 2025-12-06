@@ -16,3 +16,6 @@ Welcome to the **yeplayer** documentation. This library provides a highly custom
 - **Accessibility**: Keyboard navigation and ARIA support.
 - **Extensible**: Plugin system for quality, audio tracks, and more.
 
+## Demos
+<img width="1013" height="751" alt="imagen" src="https://github.com/user-attachments/assets/506b7cb4-a784-4adb-8422-c55438064bae" />
+<img width="965" height="735" alt="imagen" src="https://github.com/user-attachments/assets/fead4fec-ead7-4f8b-b96a-875039e067f0" />
