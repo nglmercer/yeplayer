@@ -17,13 +17,11 @@ export interface HlsPluginOptions {
 }
 
 export function createHlsPlugin(options: HlsPluginOptions = {}): PluginManifest {
-    console.log("HLS Plugin: Factory called");
     return {
         name: "hls-plugin",
         version: "1.0.0",
         description: "HLS playback support using hls.js",
         factory: (player: IPlayer, api: PluginAPI) => {
-            console.log("HLS Plugin: Creating instance");
             return new HlsPlugin(player, api, options);
         },
     };
@@ -40,22 +38,17 @@ class HlsPlugin implements PlayerPluginInstance {
         private api: PluginAPI,
         private options: HlsPluginOptions,
     ) {
-        console.log("HLS Plugin: Constructor");
     }
 
     install() {
-        console.log("HLS Plugin: Installing...");
         // Attempt to locate Hls constructor
         // 1. Injected via options
         // 2. Global window.Hls
         let HlsClass = this.options.hls;
 
         if (!HlsClass && typeof window !== 'undefined' && (window as any).Hls) {
-            console.log("HLS Plugin: Using global window.Hls");
             HlsClass = (window as any).Hls as typeof Hls;
         }
-
-        console.log("HLS Plugin: HlsClass found?", !!HlsClass);
 
         const video = this.player.media as HTMLVideoElement;
 
@@ -65,6 +58,7 @@ class HlsPlugin implements PlayerPluginInstance {
             this.hlsInstance = new HlsClass(this.options.hlsConfig);
             this.setupQualityProvider();
             this.setupAudioTrackProvider();
+            this.setupTextTrackProvider();
 
             // Handle HLS events
             this.hlsInstance!.on(HlsClass.Events.MANIFEST_PARSED, (event: any, data: any) => {
@@ -190,6 +184,74 @@ class HlsPlugin implements PlayerPluginInstance {
             });
         }
     }
+    private setupTextTrackProvider() {
+        // Hls events for subtitles
+        const HlsClass = this.options.hls || (window as any).Hls;
+
+        // Listen for track updates
+        if (this.hlsInstance) {
+            this.hlsInstance.on(HlsClass.Events.SUBTITLE_TRACKS_UPDATED, () => {
+                // We might want to emit an event here if the main API supported "tracks changed" events generally
+                // For now, the UI polls getters or we can just rely on manual refresh
+                // But properly, we should re-emit texttrackchange or something similar if the list changes?
+                // The current TextTrackProvider interface assumes static list or callbacks on active track change.
+            });
+
+            this.hlsInstance.on(HlsClass.Events.SUBTITLE_TRACK_SWITCH, (event: any, data: any) => {
+                if (this.textTrackCallback) {
+                    const track = provider.getActiveTrack();
+                    this.textTrackCallback(track);
+                }
+            });
+        }
+
+        const provider: import("../../types").TextTrackPlugin = {
+            getTextTracks: () => {
+                if (!this.hlsInstance) return [];
+                return this.hlsInstance.subtitleTracks.map((track: any, index: number) => ({
+                    id: String(index),
+                    label: track.name || track.lang || `Subtitle ${index}`,
+                    language: track.lang || 'unknown',
+                    kind: 'subtitles',
+                    active: this.hlsInstance ? this.hlsInstance.subtitleTrack === index : false
+                }));
+            },
+            addTrack: (track) => {
+                // HLS.js doesn't easily support adding external tracks manually mixed with manifest tracks this way
+                // simplified implementation
+                return "";
+            },
+            removeTrack: (trackId) => {
+                // Not supported for HLS manifest tracks
+            },
+            setActiveTrack: (trackId: string | null) => {
+                if (!this.hlsInstance) return;
+                this.hlsInstance.subtitleTrack = trackId === null ? -1 : Number(trackId);
+            },
+            getActiveTrack: () => {
+                if (!this.hlsInstance) return null;
+                const index = this.hlsInstance.subtitleTrack;
+                if (index === -1) return null;
+                const track = this.hlsInstance.subtitleTracks[index];
+                if (!track) return null;
+                return {
+                    id: String(index),
+                    label: track.name || track.lang || `Subtitle ${index}`,
+                    language: track.lang || 'unknown',
+                    kind: 'subtitles',
+                    active: true
+                };
+            },
+            onTextTrackChange: (callback) => {
+                this.textTrackCallback = callback;
+            }
+        };
+
+        this.api.registerTextTrackProvider(provider);
+    }
+
+    private textTrackCallback: ((track: any) => void) | null = null;
+
 
     // Helper to get current quality level object
     private getCurrentQuality(): QualityLevel | null {

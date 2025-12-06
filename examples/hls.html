@@ -64,14 +64,29 @@
         </div>
     </div>
 
-    <div class="controls-external">
-        <button onclick="loadSource(1)">Load Mux Stream</button>
-        <button onclick="loadSource(2)">Load Sintel
-            (4K)</button>
+    <div class="controls-external" id="stream-buttons">
+        <!-- Buttons will be generated here -->
     </div>
 
     <script type="module">
         import { Player, Controls, Gestures, Menu, Dropdown, createHlsPlugin } from "../dist/index.js";
+
+        // Stream Configuration
+        const STREAMS = [
+            { label: "Mux Stream (ABR)", url: "https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8" },
+            { label: "Sintel (4K & Surround)", url: "https://bitdash-a.akamaihd.net/content/sintel/hls/playlist.m3u8" },
+            { label: "Bip-Bop (Subs)", url: "https://devstreaming-cdn.apple.com/videos/streaming/examples/bipbop_adv_example_hevc/master.m3u8" },
+            { label: "Tears of Steel (Subs)", url: "https://demo.unified-streaming.com/k8s/features/stable/video/tears-of-steel/tears-of-steel.ism/.m3u8" }
+        ];
+
+        // Generate Buttons
+        const buttonContainer = document.getElementById('stream-buttons');
+        STREAMS.forEach(stream => {
+            const btn = document.createElement('button');
+            btn.textContent = `Load ${stream.label}`;
+            btn.onclick = () => loadSource(stream.url);
+            buttonContainer.appendChild(btn);
+        });
 
         const video = document.getElementById('video');
         const container = document.getElementById('container');
@@ -87,8 +102,8 @@
             hls: window.Hls,
             hlsConfig: { debug: false }
         })).then(() => {
-            console.log("HLS Plugin Loaded");
-            loadSource('https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8');
+            // Load first stream by default
+            loadSource(STREAMS[0].url);
         });
 
         // Setup Settings Menu
@@ -146,7 +161,7 @@
                                 { value: '-1', label: 'Off' },
                                 ...tracks.map(t => ({
                                     value: t.id,
-                                    label: `${t.label || 'Unknown'} (${t.language})`
+                                    label: `${t.label || t.language || 'Unknown'}`
                                 }))
                             ],
                             onChange: (val) => tProvider.setActiveTrack(val === '-1' ? null : val)
@@ -198,15 +213,7 @@
         }
 
         window.loadSource = (url) => {
-            if (url === 1) {
-                player.setSource('https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8');
-            }
-            if (url === 2) {
-                player.setSource('https://bitdash-a.akamaihd.net/content/sintel/hls/playlist.m3u8');
-            }
-            if (typeof url === "string") {
-                player.setSource(url);
-            }
+            player.setSource(url);
             player.play();
         };
     </script>

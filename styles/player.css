@@ -795,6 +795,7 @@ body {
     text-align: left;
     transition: background 0.2s ease;
     min-height: 40px;
+    gap: 4px;
 }
 
 .ap-row:hover {
