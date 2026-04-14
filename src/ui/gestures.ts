@@ -1,5 +1,6 @@
 import { Player } from '../player';
 import { IPlayer, PluginAPI, PlayerPluginInstance, PluginManifest } from "../types";
+import { ICONS, createSVG } from "./icons";
 
 export interface GestureOptions { skipSeconds?: number; speedBoost?: number }
 
@@ -44,7 +45,7 @@ export class Gestures implements PlayerPluginInstance {
     this.right.className = 'ap-g-right';
     this.fsBtn.className = 'ap-g-fs';
 
-    this.fsBtn.innerHTML = this.icon('maximize');
+    this.fsBtn.appendChild(createSVG(ICONS.fullscreen));
     this.fsBtn.type = 'button';
     this.fsBtn.onclick = () => { const s = this.player.getState().fullscreen; if (s) this.player.exitFullscreen(); else this.player.requestFullscreen(); };
 
@@ -69,26 +70,22 @@ export class Gestures implements PlayerPluginInstance {
 
     // Listen to player volume changes to update feedback
     this.player.on('volumechange', (vol, muted) => {
-      // Only show feedback if we are actively adjusting or if it's an external change that warrants feedback
-      // To avoid spamming, we might want to check if it's a user interaction.
-      // But for now, let's show it.
       if (muted || vol === 0) {
-        this.showCenter('volumeMute');
+        this.showCenter(ICONS.volumeMute);
       } else if (vol < 0.5) {
-        this.showCenter('volumeLow');
+        this.showCenter(ICONS.volumeLow);
       } else {
-        this.showCenter('volumeHigh');
+        this.showCenter(ICONS.volumeHigh);
       }
     });
 
     area.addEventListener('pointerdown', e => {
-      // Clear timers
       if (this.pressTimer) window.clearTimeout(this.pressTimer);
       this.pressTimer = window.setTimeout(() => {
         this.pressedBoost = true;
         const rate0 = this.player.getState().playbackRate;
         this.player.setRate(this.opts.speedBoost);
-        this.showCenter(rate0 < 1.5 ? 'boost' : 'pause');
+        this.showCenter(rate0 < 1.5 ? ICONS.boost : ICONS.pause);
       }, 400);
     });
 
@@ -131,9 +128,6 @@ export class Gestures implements PlayerPluginInstance {
       const tag = target.tagName ? target.tagName.toLowerCase() : '';
 
       if (tag === 'input' || tag === 'textarea' || target.isContentEditable) return;
-
-      // If focused element is not body or player container, maybe we should still handle it
-      // unless it has specific key handling?
 
       const s = this.player.getState();
 
@@ -192,36 +186,23 @@ export class Gestures implements PlayerPluginInstance {
     const to = side === 'left' ? Math.max(0, s.currentTime - this.opts.skipSeconds) : Math.min(s.duration, s.currentTime + this.opts.skipSeconds);
     this.player.seek(to);
     const el = side === 'left' ? this.left : this.right;
-    el.innerHTML = this.icon(side === 'left' ? 'back' : 'forward');
+    el.innerHTML = '';
+    el.appendChild(createSVG(side === 'left' ? ICONS.back : ICONS.forward, 48));
     el.style.display = 'flex';
     window.setTimeout(() => { el.style.display = 'none'; }, 500);
   }
 
-  private showCenter(kind: string) {
-    this.center.innerHTML = this.icon(kind);
+  private showCenter(iconPath: string) {
+    this.center.innerHTML = '';
+    this.center.appendChild(createSVG(iconPath, 48));
     this.center.style.display = 'flex';
 
     // Reset animation/timeout
     this.center.style.animation = 'none';
     this.center.offsetHeight; /* trigger reflow */
-    this.center.style.animation = 'fadeIn 0.2s'; // Assuming CSS has this or we rely on display
+    this.center.style.animation = 'fadeIn 0.2s'; 
 
     if (this.centerTimer) window.clearTimeout(this.centerTimer);
     this.centerTimer = window.setTimeout(() => { this.center.style.display = 'none'; }, 600);
-  }
-
-  private icon(name: string) {
-    switch (name) {
-      case 'play': return '<svg viewBox="0 0 24 24"><path fill="currentColor" d="M8 5v14l11-7-11-7Z"/></svg>';
-      case 'pause': return '<svg viewBox="0 0 24 24"><path fill="currentColor" d="M6 5h4v14H6zm8 0h4v14h-4z"/></svg>';
-      case 'forward': return '<svg viewBox="0 0 24 24"><path fill="currentColor" d="M4 5v14l8-7-8-7Zm9 0v14l8-7-8-7Z"/></svg>';
-      case 'back': return '<svg viewBox="0 0 24 24"><path fill="currentColor" d="M20 5v14l-8-7 8-7Zm-9 0v14L3 12l8-7Z"/></svg>';
-      case 'maximize': return '<svg viewBox="0 0 24 24"><path fill="currentColor" d="M4 4h7v2H6v5H4V4Zm13 0h3v7h-2V6h-5V4h4Zm-2 16h-7v-2h5v-5h2v7Zm-11-7h2v5h5v2H4v-7Z"/></svg>';
-      case 'boost': return '<svg viewBox="0 0 24 24"><path fill="currentColor" d="M12 2l4 8H8l4-8Zm0 20l-4-8h8l-4 8Z"/></svg>';
-      case 'volumeMute': return '<svg viewBox="0 0 24 24"><path fill="currentColor" d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73 4.27 3zM12 4L9.91 6.09 12 8.18V4z"/></svg>';
-      case 'volumeLow': return '<svg viewBox="0 0 24 24"><path fill="currentColor" d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/></svg>';
-      case 'volumeHigh': return '<svg viewBox="0 0 24 24"><path fill="currentColor" d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>';
-      default: return '';
-    }
   }
 }

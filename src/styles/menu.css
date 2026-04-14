@@ -24,32 +24,66 @@
     min-width: 280px;
     box-shadow: 0 20px 80px rgba(0,0,0,0.8);
     overflow: hidden;
-    transition: transform 0.4s var(--ap-transition), opacity 0.4s var(--ap-transition);
+    transition: transform 0.5s var(--ap-transition), opacity 0.4s var(--ap-transition);
 }
 
 .ap-panel {
     z-index: 52;
     animation: ap-panel-in 0.4s var(--ap-transition);
+    
+    &.ap-panel-hidden {
+        transform: translateX(-30px);
+        opacity: 0;
+        pointer-events: none;
+    }
 }
 
 .ap-subpanel {
     z-index: 53;
-    display: none;
-    /* Subpanel specific initial state for JS to toggle */
+    opacity: 0;
+    transform: translateX(30px);
+    pointer-events: none;
+    display: block !important; /* Managed by classes now */
+    
+    &.ap-subpanel-visible {
+        opacity: 1;
+        transform: translateX(0);
+        pointer-events: auto;
+    }
 }
 
-@keyframes ap-panel-in {
-    from { opacity: 0; transform: translateY(10px) scale(0.95); }
-    to { opacity: 1; transform: translateY(0) scale(1); }
+.ap-menu-header {
+    display: flex;
+    align-items: center;
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--ap-outline);
+    margin-bottom: 8px;
 }
 
-.ap-group-title {
-    padding: 14px 20px 8px;
-    font-size: 11px;
+.ap-back-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s;
+    
+    &:hover {
+        background: var(--ap-surface-hover);
+    }
+    
+    svg {
+        width: 20px;
+        height: 20px;
+    }
+}
+
+.ap-menu-title {
+    font-size: 14px;
     font-weight: 800;
-    text-transform: uppercase;
-    color: var(--ap-on-surface-variant);
-    letter-spacing: 0.12em;
+    margin-left: 4px;
+    color: #fff;
 }
 
 .ap-row {
@@ -58,7 +92,7 @@
     justify-content: space-between;
     width: 100%;
     padding: 12px 20px;
-    transition: background 0.2s, color 0.2s;
+    transition: background 0.3s, color 0.2s;
     cursor: pointer;
     border: none;
     background: none;
@@ -71,7 +105,25 @@
         background: var(--ap-surface-hover);
         .ap-label { color: #fff; }
     }
+    
+    &.ap-row-selected {
+        background: rgba(255,255,255,0.05);
+        transform: scale(1.02);
+        .ap-label {
+            color: var(--ap-accent);
+        }
+    }
 }
+
+.ap-group-title {
+    padding: 14px 20px 8px;
+    font-size: 11px;
+    font-weight: 800;
+    text-transform: uppercase;
+    color: var(--ap-on-surface-variant);
+    letter-spacing: 0.12em;
+}
+
 
 .ap-left {
     display: flex;
@@ -138,7 +190,7 @@
     transition: background 0.2s, transform 0.2s;
     
     &.ap-check-on {
-        background: var(--ap-primary);
+        background: var(--ap-accent);
         &::after {
             content: "";
             position: absolute;

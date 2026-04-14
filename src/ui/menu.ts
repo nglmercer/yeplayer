@@ -1,30 +1,32 @@
+import { ICONS, createSVG } from "./icons";
+
 export type MenuIcon = string | HTMLElement;
 
 export type MenuItem =
   | {
-      type: "toggle";
-      id: string;
-      label: string;
-      icon?: MenuIcon;
-      value: boolean;
-      onChange: (v: boolean) => void;
-    }
+    type: "toggle";
+    id: string;
+    label: string;
+    icon?: MenuIcon;
+    value: boolean;
+    onChange: (v: boolean) => void;
+  }
   | {
-      type: "select";
-      id: string;
-      label: string;
-      icon?: MenuIcon;
-      value: string;
-      options: Array<{ value: string; label: string }>;
-      onChange: (v: string) => void;
-    }
+    type: "select";
+    id: string;
+    label: string;
+    icon?: MenuIcon;
+    value: string;
+    options: Array<{ value: string; label: string }>;
+    onChange: (v: string) => void;
+  }
   | {
-      type: "action";
-      id: string;
-      label: string;
-      icon?: MenuIcon;
-      onClick: () => void;
-    };
+    type: "action";
+    id: string;
+    label: string;
+    icon?: MenuIcon;
+    onClick: () => void;
+  };
 
 export interface MenuGroup {
   label: string;
@@ -164,12 +166,18 @@ export class Menu {
   }
 
   private openSubpanel() {
-    this.subpanel.style.display = "block";
-    this.subpanel.style.transition = "opacity 0.15s ease, transform 0.15s ease";
-    // Trigger reflow for animation
-    this.subpanel.offsetHeight;
-    this.subpanel.style.opacity = "1";
-    this.subpanel.style.transform = "translateX(0)";
+    this.panel.classList.add("ap-panel-hidden");
+    this.subpanel.classList.add("ap-subpanel-visible");
+  }
+
+  private closeSubpanel() {
+    this.panel.classList.remove("ap-panel-hidden");
+    this.subpanel.classList.remove("ap-subpanel-visible");
+    setTimeout(() => {
+      if (!this.subpanel.classList.contains("ap-subpanel-visible")) {
+        this.subpanel.innerHTML = "";
+      }
+    }, 400);
   }
 
   private renderMain() {
@@ -216,6 +224,7 @@ export class Menu {
         item.options.find((o) => o.value === item.value)?.label || "";
       const arrow = document.createElement("span");
       arrow.className = "ap-arrow";
+      arrow.appendChild(createSVG(ICONS.menuArrow, 16));
       right.appendChild(val);
       right.appendChild(arrow);
       row.onclick = (e) => {
@@ -245,16 +254,26 @@ export class Menu {
     this.activeSelectItem = item;
     this.subpanel.innerHTML = "";
 
-    // Set initial state for animation
-    this.subpanel.style.opacity = "0";
-    this.subpanel.style.transform = "translateX(10px)";
-    this.subpanel.style.transition = "opacity 0.15s ease, transform 0.15s ease";
-    this.subpanel.style.display = "block";
+    // Header with Back Button
+    const header = document.createElement("div");
+    header.className = "ap-menu-header";
+
+    const backBtn = document.createElement("button");
+    backBtn.type = "button";
+    backBtn.className = "ap-back-btn";
+    backBtn.appendChild(createSVG(ICONS.menuBack));
+    backBtn.onclick = (e) => {
+      e.stopPropagation();
+      this.closeSubpanel();
+    };
 
     const title = document.createElement("div");
-    title.className = "ap-group-title";
+    title.className = "ap-menu-title";
     title.textContent = item.label;
-    this.subpanel.appendChild(title);
+
+    header.appendChild(backBtn);
+    header.appendChild(title);
+    this.subpanel.appendChild(header);
 
     for (const opt of item.options) {
       const row = document.createElement("button");
@@ -270,6 +289,7 @@ export class Menu {
       const check = document.createElement("span");
       check.className =
         "ap-check" + (opt.value === item.value ? " ap-check-on" : "");
+      check.appendChild(createSVG(ICONS.check, 14));
       left.appendChild(label);
       right.appendChild(check);
       row.appendChild(left);
@@ -279,10 +299,20 @@ export class Menu {
         item.value = opt.value;
         item.onChange(opt.value);
         this.renderMain();
-        // Close subpanel after selection with animation
-        this.closeSubpanel();
-        this.activeSelectItem = undefined;
+
+        // Update selection UI immediately in subpanel
+        this.subpanel.querySelectorAll(".ap-check").forEach(c => c.classList.remove("ap-check-on"));
+        this.subpanel.querySelectorAll(".ap-row").forEach(r => r.classList.remove("ap-row-selected"));
+        check.classList.add("ap-check-on");
+        row.classList.add("ap-row-selected");
+
+        // Delayed close for better UX
+        setTimeout(() => {
+          this.closeSubpanel();
+          this.activeSelectItem = undefined;
+        }, 300);
       };
+      if (opt.value === item.value) row.classList.add("ap-row-selected");
       this.subpanel.appendChild(row);
     }
 
@@ -292,11 +322,6 @@ export class Menu {
     setTimeout(() => {
       this.openSubpanel();
     }, 10);
-  }
-
-  private closeSubpanel() {
-    this.subpanel.style.display = "none";
-    this.subpanel.innerHTML = "";
   }
 
   private closeAllSubmenus() {
@@ -309,8 +334,13 @@ export class Menu {
     const span = document.createElement("span");
     span.className = "ap-icon";
     if (!icon) return span;
-    if (typeof icon === "string") span.innerHTML = icon;
-    else span.appendChild(icon);
+    if (typeof icon === "string") {
+        if (ICONS[icon as keyof typeof ICONS]) {
+            span.appendChild(createSVG(ICONS[icon as keyof typeof ICONS]));
+        } else {
+            span.innerHTML = icon;
+        }
+    } else span.appendChild(icon);
     return span;
   }
 }
