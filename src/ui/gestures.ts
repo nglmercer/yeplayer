@@ -1,25 +1,39 @@
 import { Player } from '../player';
+import { IPlayer, PluginAPI, PlayerPluginInstance, PluginManifest } from "../types";
 
 export interface GestureOptions { skipSeconds?: number; speedBoost?: number }
 
-export class Gestures {
-  readonly root: HTMLElement;
-  readonly player: Player;
-  readonly opts: Required<GestureOptions>;
-  private center: HTMLElement;
-  private left: HTMLElement;
-  private right: HTMLElement;
-  private fsBtn: HTMLButtonElement;
+export function createGestures(options: GestureOptions = {}): PluginManifest {
+    return {
+        name: "gestures",
+        version: "1.0.0",
+        factory: (player: IPlayer, api: PluginAPI) => new Gestures(player as Player, api, options),
+    };
+}
+
+export class Gestures implements PlayerPluginInstance {
+  root!: HTMLElement;
+  player: Player;
+  opts: Required<GestureOptions>;
+  private center!: HTMLElement;
+  private left!: HTMLElement;
+  private right!: HTMLElement;
+  private fsBtn!: HTMLButtonElement;
   private lastTap = 0;
   private lastTapX = 0;
-  private tapTimer: any = null;
-  private pressTimer: any = null;
+  private tapTimer: number | null = null;
+  private pressTimer: number | null = null;
   private pressedBoost = false;
+  private centerTimer: number | null = null;
 
-  constructor(root: HTMLElement, player: Player, opts: GestureOptions = {}) {
-    this.root = root;
+  constructor(player: Player, api: PluginAPI, opts: GestureOptions = {}) {
     this.player = player;
     this.opts = { skipSeconds: opts.skipSeconds ?? 10, speedBoost: opts.speedBoost ?? 2 };
+  }
+
+  async install() {
+    this.root = this.player.getContainer();
+    const root = this.root;
     this.center = document.createElement('div');
     this.left = document.createElement('div');
     this.right = document.createElement('div');
@@ -32,7 +46,7 @@ export class Gestures {
 
     this.fsBtn.innerHTML = this.icon('maximize');
     this.fsBtn.type = 'button';
-    this.fsBtn.onclick = () => { const s = player.getState().fullscreen; if (s) player.exitFullscreen(); else player.requestFullscreen(); };
+    this.fsBtn.onclick = () => { const s = this.player.getState().fullscreen; if (s) this.player.exitFullscreen(); else this.player.requestFullscreen(); };
 
     root.appendChild(this.center);
     root.appendChild(this.left);
@@ -43,8 +57,15 @@ export class Gestures {
     this.bindKeyboard();
   }
 
+  dispose() {
+    if (this.center && this.center.parentNode) this.center.parentNode.removeChild(this.center);
+    if (this.left && this.left.parentNode) this.left.parentNode.removeChild(this.left);
+    if (this.right && this.right.parentNode) this.right.parentNode.removeChild(this.right);
+    if (this.fsBtn && this.fsBtn.parentNode) this.fsBtn.parentNode.removeChild(this.fsBtn);
+  }
+
   private bind() {
-    const area = this.root.querySelector('video') || this.root;
+    const area = this.player.media || this.player.getContainer();
 
     // Listen to player volume changes to update feedback
     this.player.on('volumechange', (vol, muted) => {
@@ -62,8 +83,8 @@ export class Gestures {
 
     area.addEventListener('pointerdown', e => {
       // Clear timers
-      clearTimeout(this.pressTimer);
-      this.pressTimer = setTimeout(() => {
+      if (this.pressTimer) window.clearTimeout(this.pressTimer);
+      this.pressTimer = window.setTimeout(() => {
         this.pressedBoost = true;
         const rate0 = this.player.getState().playbackRate;
         this.player.setRate(this.opts.speedBoost);
@@ -74,7 +95,7 @@ export class Gestures {
     // Volume drag removed
 
     area.addEventListener('pointerup', e => {
-      clearTimeout(this.pressTimer);
+      if (this.pressTimer) window.clearTimeout(this.pressTimer);
       if (this.pressedBoost) {
         this.pressedBoost = false;
         this.player.setRate(1);
@@ -89,12 +110,14 @@ export class Gestures {
       if (dbl) {
         if (x < rect.width * 0.4) this.skip('left');
         else if (x > rect.width * 0.6) this.skip('right');
-        this.lastTap = 0; this.lastTapX = 0; clearTimeout(this.tapTimer); this.tapTimer = null;
+        this.lastTap = 0; this.lastTapX = 0; 
+        if (this.tapTimer) window.clearTimeout(this.tapTimer);
+        this.tapTimer = null;
         return;
       }
       this.lastTap = now; this.lastTapX = x;
-      clearTimeout(this.tapTimer);
-      this.tapTimer = setTimeout(() => {
+      if (this.tapTimer) window.clearTimeout(this.tapTimer);
+      this.tapTimer = window.setTimeout(() => {
         // Single tap behavior (toggle play)
         const paused = this.player.getState().paused;
         if (paused) this.player.play(); else this.player.pause();
@@ -171,7 +194,7 @@ export class Gestures {
     const el = side === 'left' ? this.left : this.right;
     el.innerHTML = this.icon(side === 'left' ? 'back' : 'forward');
     el.style.display = 'flex';
-    setTimeout(() => { el.style.display = 'none'; }, 500);
+    window.setTimeout(() => { el.style.display = 'none'; }, 500);
   }
 
   private showCenter(kind: string) {
@@ -183,8 +206,8 @@ export class Gestures {
     this.center.offsetHeight; /* trigger reflow */
     this.center.style.animation = 'fadeIn 0.2s'; // Assuming CSS has this or we rely on display
 
-    clearTimeout((this.center as any)._t);
-    (this.center as any)._t = setTimeout(() => { this.center.style.display = 'none'; }, 600);
+    if (this.centerTimer) window.clearTimeout(this.centerTimer);
+    this.centerTimer = window.setTimeout(() => { this.center.style.display = 'none'; }, 600);
   }
 
   private icon(name: string) {

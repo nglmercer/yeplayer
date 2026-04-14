@@ -69,7 +69,7 @@
     </div>
 
     <script type="module">
-        import { Player, Controls, Gestures, Menu, Dropdown, createHlsPlugin } from "../dist/index.js";
+        import { Player, createControls, createGestures, Menu, Dropdown, createHlsPlugin } from "../dist/index.js";
 
         // Stream Configuration
         const STREAMS = [
@@ -94,11 +94,11 @@
         const player = new Player({ media: video });
 
         // Initialize UI
-        const controls = new Controls(player, container);
-        new Gestures(container, player);
+        const controls = await player.usePlugin(createControls());
+        await player.usePlugin(createGestures());
 
         // HLS Plugin
-        player.usePlugin(createHlsPlugin({
+        await player.usePlugin(createHlsPlugin({
             hls: window.Hls,
             hlsConfig: { debug: false }
         })).then(() => {

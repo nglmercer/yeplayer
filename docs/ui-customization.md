@@ -1,71 +1,53 @@
-# UI Customization & Menus
+# UI Customization
 
-The player comes with a rich set of UI components including Controls, Menus, and a Settings panel.
+yeplayer is highly customizable through its plugin system and CSS variables.
 
-## Controls
+## Using Controls
 
-The `Controls` class provides the bottom bar with play/pause, volume, time, and fullscreen buttons.
+The `Controls` plugin provides a modern UI with play/pause, volume, seek bar, time, and settings.
 
 ```typescript
-import { Controls } from 'ytplayer';
+import { Player, createControls } from 'agnostic-player';
 
-const controls = new Controls(player, container, {
-    icons: {
-        // You can override default SVG icons here
-        play: '<svg>...</svg>'
-    }
-});
+const player = new Player({ /* ... */ });
+await player.usePlugin(createControls({
+  // Optional configuration
+  compact: false,
+  hideOnIdle: true,
+  idleDelay: 3000
+}));
 ```
 
-## Settings Menu
+## Styling (CSS Variables)
 
-The `Menu` component allows for creating a detailed settings panel (like YouTube's gear icon menu).
+You can customize the look and feel using CSS variables:
 
-### 1. Initialize the Menu
-```typescript
-import { Menu } from 'ytplayer';
-
-const menu = new Menu(container, [
-    { label: 'Quality', items: [] },
-    { label: 'Speed', items: [] }
-]);
-
-// Hook up to the controls button
-controls.getSettingsButton().onclick = (e) => {
-    e.stopPropagation();
-    refreshMenuData(); // Update data before showing
-    menu.toggle();
-};
-```
-
-### 2. Populate Data from Plugins
-
-The menu does not auto-populate. You should fetch data from the `PluginAPI` and format it for the menu.
-
-```typescript
-function refreshMenuData() {
-    const api = player.getAPI();
-    const groups = [];
-
-    // Example: Add Quality Options
-    const qProvider = api.getQualityProvider();
-    if (qProvider) {
-        groups.push({
-            label: 'Quality',
-            items: [{
-                type: 'select',
-                id: 'quality',
-                label: 'Quality',
-                value: qProvider.getCurrentQuality()?.id,
-                options: qProvider.getAvailableQualities().map(q => ({
-                    value: q.id,
-                    label: q.height + 'p'
-                })),
-                onChange: (val) => qProvider.setQuality(val)
-            }]
-        });
-    }
-
-    menu.setGroups(groups);
+```css
+.player-container {
+  --player-primary: #ff0000;
+  --player-glass-bg: rgba(0, 0, 0, 0.4);
+  --player-accent: #00ff00;
+  --player-font: 'Inter', sans-serif;
 }
+```
+
+### Key Variables
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `--player-primary` | Main accent color | `#ffffff` |
+| `--player-bg` | Background of controls | `rgba(0,0,0,0.6)` |
+| `--player-radius` | Border radius for UI | `12px` |
+
+## Adding Custom Menu Items
+
+The settings menu can be extended:
+
+```typescript
+player.getAPI().addMenuItem({
+  id: 'custom-action',
+  label: 'My Action',
+  icon: '<svg>...</svg>',
+  onClick: () => console.log('Action clicked!')
+});
 ```

@@ -1,41 +1,51 @@
-# Getting Started
+# Getting Started with yeplayer
+
+**yeplayer** is a modern, framework-agnostic video player built with TypeScript, designed for performance and customizability.
 
 ## Installation
 
-Install the package via npm:
-
 ```bash
-npm install ytplayer
+npm install agnostic-player hls.js
 ```
 
 ## Basic Usage
 
-To create a basic player, you need an HTML video element and a container:
+To use yeplayer, you need a video element and a container.
+
+### HTML
 
 ```html
-<div class="player-wrapper">
-    <video id="video" src="video.mp4"></video>
+<div class="player-container">
+  <video id="my-video" crossorigin="anonymous"></video>
 </div>
 ```
 
-Then, initialize the player in your JavaScript:
+### TypeScript / JavaScript
 
-```javascript
-import { Player, Controls } from 'ytplayer';
-import 'ytplayer/styles/player.css';
+```typescript
+import { Player } from 'agnostic-player';
 
-const video = document.getElementById('video');
+const video = document.getElementById('my-video') as HTMLVideoElement;
+const container = document.querySelector('.player-container') as HTMLElement;
 
-// Initialize Player
 const player = new Player({
-    media: video,
-    autoplay: false
+  media: video,
+  container: container,
+  autoplay: false,
 });
 
-// Add Controls
-const controls = new Controls(player, document.querySelector('.player-wrapper'));
+player.setSource('https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8');
 ```
 
-## CSS Setup
+## Adding UI Controls
 
-Ensure you import the styles or include `styles/player.css` in your project to get the YouTube-like aesthetics.
+By default, the player is just a wrapper around the video element. You can add the built-in UI:
+
+```typescript
+import { Player, createControls } from 'agnostic-player';
+
+const player = new Player({ /* options */ });
+
+// Add the default controls
+await player.usePlugin(createControls());
+```

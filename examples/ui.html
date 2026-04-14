@@ -97,10 +97,10 @@
         const container = document.getElementById('container');
 
         const player = new Player({ media: video });
-        const gestures = new Gestures(container, player);
+        const gestures = await player.usePlugin(createGestures());
 
         // Custom Controls with added button
-        const controls = new Controls(player, container);
+        const controls = await player.usePlugin(createControls());
 
         // 1. Setup Main Menu
         const menu = new Menu(container, [

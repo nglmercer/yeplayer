@@ -1,5 +1,6 @@
 
 import { Player } from "../player";
+import { IPlayer, PluginAPI, PlayerPluginInstance, PluginManifest } from "../types";
 
 export interface ControlIcons {
     play?: string | HTMLElement;
@@ -51,11 +52,19 @@ function createSVG(path: string | HTMLElement, size: number = 24): HTMLElement |
     return svg;
 }
 
-export class Controls {
-    element: HTMLElement;
+export function createControls(options: ControlsOptions = {}): PluginManifest {
+    return {
+        name: "controls",
+        version: "1.0.0",
+        factory: (player: IPlayer, api: PluginAPI) => new Controls(player as Player, api, options),
+    };
+}
+
+export class Controls implements PlayerPluginInstance {
+    element!: HTMLElement;
     private player: Player;
     private options: ControlsOptions;
-    private icons: any;
+    private icons: Required<ControlIcons> = DEFAULT_ICONS;
 
     private progressContainer!: HTMLElement;
     private progressBar!: HTMLElement;
@@ -72,16 +81,30 @@ export class Controls {
     // Feedback
     private feedbackOverlay!: HTMLElement;
     private bigPlayBtn!: HTMLElement;
-    private feedbackTimeout: any;
+    private feedbackTimeout: number | null = null;
 
-    constructor(player: Player, container: HTMLElement, options: ControlsOptions = {}) {
+    constructor(player: Player, api: PluginAPI, options: ControlsOptions = {}) {
         this.player = player;
         this.options = options;
-        this.icons = { ...DEFAULT_ICONS, ...(options.icons || {}) };
+    }
 
+    async install() {
+        this.icons = { ...DEFAULT_ICONS, ...(this.options.icons || {}) };
         this.element = this.createDOM();
-        container.appendChild(this.element);
+        this.player.getContainer().appendChild(this.element);
         this.bindEvents();
+    }
+
+    dispose() {
+        if (this.element && this.element.parentNode) {
+            this.element.parentNode.removeChild(this.element);
+        }
+        if (this.feedbackOverlay && this.feedbackOverlay.parentNode) {
+            this.feedbackOverlay.parentNode.removeChild(this.feedbackOverlay);
+        }
+        if (this.bigPlayBtn && this.bigPlayBtn.parentNode) {
+            this.bigPlayBtn.parentNode.removeChild(this.bigPlayBtn);
+        }
     }
 
     private createDOM(): HTMLElement {
@@ -347,8 +370,8 @@ export class Controls {
         this.feedbackOverlay.style.opacity = '1';
         this.feedbackOverlay.style.transform = 'translate(-50%, -50%) scale(1)';
 
-        if (this.feedbackTimeout) clearTimeout(this.feedbackTimeout);
-        this.feedbackTimeout = setTimeout(() => {
+        if (this.feedbackTimeout) window.clearTimeout(this.feedbackTimeout);
+        this.feedbackTimeout = window.setTimeout(() => {
             this.feedbackOverlay.style.opacity = '0';
             this.feedbackOverlay.style.transform = 'translate(-50%, -50%) scale(1.1)';
         }, 500);

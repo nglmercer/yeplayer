@@ -183,7 +183,7 @@ export class Player implements IPlayer {
   }
 
   // New plugin manifest system
-  async usePlugin(manifest: PluginManifest): Promise<void> {
+  async usePlugin(manifest: PluginManifest): Promise<PlayerPluginInstance> {
     try {
       // Check dependencies
       if (manifest.dependencies) {
@@ -200,10 +200,11 @@ export class Player implements IPlayer {
 
       this.pluginInstances.set(manifest.name, instance);
 
-      // Add to legacy plugins array for cleanup
       this.plugins.push({
         dispose: () => instance.dispose?.(),
       });
+
+      return instance;
     } catch (error) {
       console.error(`Failed to load plugin ${manifest.name}:`, error);
       throw error;

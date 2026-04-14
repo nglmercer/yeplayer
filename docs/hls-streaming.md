@@ -1,49 +1,47 @@
 # HLS Streaming
 
-The player supports HLS streaming via the `createHlsPlugin`.
+yeplayer provides a powerful HLS plugin powered by `hls.js`.
 
 ## Setup
 
-1. Include `hls.js` in your project dependencies.
-2. Register the plugin with the player.
+First, ensure you have `hls.js` installed:
 
-```typescript
-import { Player, createHlsPlugin } from 'ytplayer';
-import Hls from 'hls.js';
-
-const video = document.getElementById('video');
-
-const player = new Player({
-    media: video
-});
-
-// Load the HLS Plugin
-player.use(createHlsPlugin({
-    hls: Hls, // Pass the Hls constructor
-    hlsConfig: {
-        debug: false,
-        enableWorker: true
-    }
-}));
-
-// Set an HLS source
-player.setSource('https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8');
-player.play();
+```bash
+npm install hls.js
 ```
 
-## Supported Features
+## Basic HLS Integration
 
-- **Adaptive Bitrate**: Automatically switches quality based on network conditions.
-- **Quality Manual Control**: Users can select specific resolutions (e.g., 1080p, 720p).
-- **Subtitles/Captions**: Support for WebVTT and embedded subtitles.
-- **Audio Tracks**: Support for multiple audio languages (e.g., dubbing).
+```typescript
+import { Player, createHlsPlugin } from 'agnostic-player';
+import Hls from 'hls.js';
 
-## Plugin API
+const player = new Player({
+  media: document.getElementById('video'),
+});
 
-When you use the HLS plugin, it registers several providers with the core player API:
+// Use the HLS plugin
+await player.usePlugin(createHlsPlugin({
+  hlsConfig: {
+    // Standard hls.js configuration
+    capLevelToPlayerSize: true,
+  }
+}));
 
-- **QualityProvider**: Read available levels (`getAvailableQualities`) and set quality (`setQuality`).
-- **TextTrackProvider**: Read subtitle tracks (`getTextTracks`) and set active caption (`setActiveTrack`).
-- **AudioTrackProvider**: Read audio languages (`getAudioTracks`) and switch language (`setActiveTrack`).
+player.setSource('https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8');
+```
 
-These providers can be accessed via `player.getAPI().getQualityProvider()`, etc., allowing you to build custom menus or settings panels.
+## Quality Management
+
+When using the HLS plugin, it automatically registers a Quality Provider. You can access it via:
+
+```typescript
+const qualityPlugin = player.getAPI().getQualityProvider();
+
+if (qualityPlugin) {
+  const levels = qualityPlugin.getQualities();
+  qualityPlugin.setQuality(levels[0].id);
+}
+```
+
+The HLS plugin will also emit `qualitychange` events on the player.

@@ -17,7 +17,7 @@ export class APMenuElement extends HTMLElement {
 export class APGesturesElement extends HTMLElement {
   gestures?: Gestures;
   init(root: HTMLElement, player: Player, options?: GestureOptions) {
-    this.gestures = new Gestures(root, player, options);
+    this.gestures = new Gestures(player, player.getAPI(), options);
     return this.gestures;
   }
 }

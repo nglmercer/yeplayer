@@ -8,6 +8,7 @@ Welcome to the **yeplayer** documentation. This library provides a highly custom
 - [**HLS Streaming**](./docs/hls-streaming.md) - How to play HLS streams (.m3u8).
 - [**UI Customization**](./docs/ui-customization.md) - Using Controls, Menus, and modifying styles.
 - [**Gestures & Shortcuts**](./docs/gestures-and-shortcuts.md) - Touch gestures and keyboard controls.
+- [**Examples**](./examples/README.md) - Implementations for Vanilla JS, Preact, and Vue.
 
 ## Features
 

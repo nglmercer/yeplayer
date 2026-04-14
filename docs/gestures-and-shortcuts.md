@@ -1,33 +1,35 @@
 # Gestures & Shortcuts
 
-## Gestures
+yeplayer includes a built-in gesture and keyboard shortcut system.
 
-The `Gestures` class adds mobile-friendly touch interactions and visual feedback.
+## Enabling Gestures
 
-- **Double Tap Left/Right**: Seek back/forward 10 seconds.
-- **Single Tap**: Toggle Play/Pause.
-- **Hold Left/Right**: Speed boost (2x playback rate).
+Add the `Gestures` plugin to enable double-tap to seek, swipe to volume/brightness (on supported devices), and keyboard shortcuts.
 
 ```typescript
-import { Gestures } from 'ytplayer';
+import { Player, createGestures } from 'agnostic-player';
 
-new Gestures(container, player, {
-    skipSeconds: 10,
-    speedBoost: 2
-});
+const player = new Player({ /* ... */ });
+await player.usePlugin(createGestures({
+  keyboard: true,    // Enable space, arrows, m, f, etc.
+  seekStep: 10,      // Seconds to jump
+  volumeStep: 0.1    // Volume change increment
+}));
 ```
 
-## Keyboard Shortcuts
-
-The player includes built-in keyboard shortcuts matching standard conventions:
+## Default Keyboard Shortcuts
 
 | Key | Action |
-| --- | --- |
-| `Space` / `K` | Play / Pause |
-| `J` | Seek backward 10s |
-| `L` | Seek forward 10s |
-| `Left` / `Right` | Seek backward/forward 5s |
-| `Up` / `Down` | Volume Up / Down (5%) |
-| `M` | Mute / Unmute |
-| `F` | Toggle Fullscreen |
-| `0-9` | Seek to 0% - 90% |
+|-----|--------|
+| `Space` / `k` | Play / Pause |
+| `Left Arrow` / `j` | Seek Back 10s |
+| `Right Arrow` / `l` | Seek Forward 10s |
+| `f` | Toggle Fullscreen |
+| `m` | Toggle Mute |
+| `Up Arrow` | Volume Up |
+| `Down Arrow` | Volume Down |
+| `0-9` | Seek to % of video |
+
+## Double Tap Regions
+
+The `Gestures` plugin overlays invisible layers on the left and right sides of the player for double-tap seeking, similar to mobile apps.
