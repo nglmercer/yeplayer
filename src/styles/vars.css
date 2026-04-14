@@ -1,0 +1,43 @@
+:root {
+    /* Color Palette - Premium Dark */
+    --ap-bg: #050505;
+    --ap-surface: rgba(20, 20, 20, 0.7);
+    --ap-surface-hover: rgba(40, 40, 40, 0.8);
+    --ap-on-surface: #ffffff;
+    --ap-on-surface-variant: rgba(255, 255, 255, 0.6);
+    
+    /* Branding - Vibrant Primary */
+    --ap-primary: #ff3e3e;
+    --ap-primary-gradient: linear-gradient(135deg, #ff3e3e 0%, #ff007a 100%);
+    --ap-accent: #3ea6ff;
+    
+    /* Functional Colors */
+    --ap-scrubber: var(--ap-primary);
+    --ap-progress-loaded: rgba(255, 255, 255, 0.2);
+    --ap-shadow: rgba(0, 0, 0, 0.5);
+    --ap-outline: rgba(255, 255, 255, 0.1);
+
+    /* Aesthetics */
+    --ap-radius-lg: 16px;
+    --ap-radius-md: 12px;
+    --ap-radius-sm: 8px;
+    --ap-blur: blur(12px);
+    --ap-transition: cubic-bezier(0.4, 0, 0.2, 1);
+    
+    /* Layout & Sizing */
+    --ap-progress-height: 4px;
+    --ap-progress-hover: 6px;
+    --ap-controls-height: 64px;
+    --ap-btn-size: 44px;
+    --ap-padding: 16px;
+
+    /* Scalability */
+    --ap-scale: 1;
+}
+
+@media (max-width: 768px) {
+    :root {
+        --ap-scale: 1.2;
+        --ap-controls-height: 72px;
+    }
+}

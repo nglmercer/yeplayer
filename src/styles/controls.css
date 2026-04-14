@@ -1,0 +1,173 @@
+.controls {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 45;
+    padding: 0;
+    background: linear-gradient(transparent, rgba(0,0,0,0.8));
+    opacity: 0;
+    transition: opacity 0.3s var(--ap-transition);
+    transform: translateY(10px);
+    pointer-events: none;
+
+    .player-wrapper:hover &,
+    &.visible {
+        opacity: 1;
+        transform: translateY(0);
+        pointer-events: auto;
+    }
+
+    .controls-main {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        height: var(--ap-controls-height);
+        padding: 0 var(--ap-padding);
+        
+        .controls-left, .controls-right {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+    }
+}
+
+/* Progress bar */
+.controls-progress {
+    padding: 0 var(--ap-padding);
+    margin-bottom: -12px;
+    
+    .progress-container {
+        height: var(--ap-progress-height);
+        background: rgba(255,255,255,0.1);
+        border-radius: 4px;
+        cursor: pointer;
+        transition: height 0.2s;
+        
+        &:hover {
+            height: var(--ap-progress-hover);
+        }
+    }
+    
+    .progress-bar {
+        position: relative;
+        height: 100%;
+        width: 100%;
+    }
+    
+    .progress-played {
+        background: var(--ap-primary-gradient);
+        height: 100%;
+        border-radius: 4px;
+        box-shadow: 0 0 10px rgba(255, 62, 62, 0.4);
+    }
+    
+    .scrubber {
+        position: absolute;
+        top: 50%;
+        right: -6px;
+        width: 14px;
+        height: 14px;
+        background: #fff;
+        border-radius: 50%;
+        transform: translateY(-50%) scale(0);
+        transition: transform 0.2s var(--ap-transition);
+        box-shadow: 0 0 8px rgba(0,0,0,0.5);
+    }
+    
+    .progress-container:hover .scrubber {
+        transform: translateY(-50%) scale(1);
+    }
+}
+
+/* Buttons */
+.ctrl.btn {
+    width: var(--ap-btn-size);
+    height: var(--ap-btn-size);
+    border-radius: 50%;
+    transition: background 0.2s, transform 0.2s;
+    
+    &:hover {
+        background: var(--ap-surface-hover);
+        transform: scale(1.1);
+    }
+    
+    &:active {
+        transform: scale(0.95);
+    }
+    
+    svg {
+        width: 24px;
+        height: 24px;
+        margin: auto;
+    }
+}
+
+.time-display {
+    font-variant-numeric: tabular-nums;
+    font-size: 14px;
+    font-weight: 500;
+    opacity: 0.9;
+}
+
+/* Volume */
+.volume-container {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    
+    input[type="range"] {
+        width: 0;
+        opacity: 0;
+        transition: width 0.3s, opacity 0.3s;
+    }
+    
+    &:hover input[type="range"] {
+        width: 80px;
+        opacity: 1;
+    }
+}
+
+/* Big Play Overlay */
+.ap-big-play {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 5;
+    
+    div {
+        background: var(--ap-surface);
+        backdrop-filter: var(--ap-blur);
+        border: 1px solid var(--ap-outline);
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: scale 0.2s;
+        
+        &:hover {
+            scale: 1.1;
+            background: var(--ap-surface-hover);
+        }
+    }
+}
+
+/* Visual Feedback */
+.feedback-overlay {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: var(--ap-surface);
+    backdrop-filter: var(--ap-blur);
+    padding: 20px;
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 100;
+    opacity: 0;
+}

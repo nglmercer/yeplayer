@@ -15,7 +15,7 @@
 <script setup>
 import { ref, onMounted, onBeforeUnmount, watch } from 'vue';
 import { Player, createControls, createGestures, createHlsPlugin } from 'agnostic-player';
-import 'agnostic-player/styles/player.css';
+import '../../dist/player.css';
 
 const props = defineProps({
   src: { type: String, required: true },

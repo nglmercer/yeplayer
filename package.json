@@ -15,11 +15,15 @@
     }
   },
   "scripts": {
-    "build": "tsup src/index.ts --format esm,cjs --dts --sourcemap --clean",
-    "dev": "tsup src/index.ts --watch",
+    "build:js": "tsup src/index.ts --format esm,cjs --dts --sourcemap --clean",
+    "build:css": "postcss src/styles/index.css -o dist/player.css",
+    "build": "npm run build:js && npm run build:css",
+    "watch:js": "tsup src/index.ts --watch",
+    "watch:css": "postcss src/styles/index.css -o dist/player.css --watch",
     "serve": "npx -y http-server . -p 5173 -c-1 --cors",
     "serve:example": "npm run build && npm run serve",
-    "dev:example": "concurrently \"npm run dev\" \"npm run serve\"",
+    "dev:example": "concurrently \"npm run watch:js\" \"npm run watch:css\" \"npm run serve\"",
+    "dev": "npm run dev:example",
     "test": "echo \"No tests yet\"",
     "lint": "echo \"No linter configured yet\""
   },
@@ -47,8 +51,14 @@
   },
   "homepage": "https://github.com/your-username/agnostic-player#readme",
   "devDependencies": {
+    "autoprefixer": "^10.5.0",
     "concurrently": "^8.2.2",
+    "cssnano": "^7.1.5",
     "hls.js": "^1.6.15",
+    "postcss": "^8.5.9",
+    "postcss-cli": "^11.0.1",
+    "postcss-import": "^16.1.1",
+    "postcss-nesting": "^14.0.0",
     "preact": "^10.29.1",
     "tsup": "^8.5.1",
     "typescript": "^5.9.3"

@@ -2,7 +2,7 @@
 import { h } from 'preact';
 import { useEffect, useRef } from 'preact/hooks';
 import { Player, createControls, createGestures, createHlsPlugin } from 'agnostic-player';
-import 'agnostic-player/styles/player.css';
+import '../../dist/player.css';
 
 interface PlayerProps {
   src: string;
