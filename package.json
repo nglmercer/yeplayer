@@ -2,7 +2,10 @@
   "name": "ssassplayer",
   "version": "0.1.0",
   "description": "Un reproductor de video/audio modular y extensible con sistema de plugins",
-  "private": true,
+  "private": false,
+  "files": [
+    "dist"
+  ],
   "type": "module",
   "main": "dist/index.cjs",
   "module": "dist/index.js",
@@ -12,12 +15,14 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
-    }
+    },
+    "./style.css": "./dist/player.css"
   },
   "scripts": {
     "build:js": "tsup src/index.ts --format esm,cjs --dts --sourcemap --clean",
     "build:css": "postcss src/styles/index.css -o dist/player.css",
     "build": "npm run build:js && npm run build:css",
+    "prepublishOnly": "npm run build",
     "watch:js": "tsup src/index.ts --watch",
     "watch:css": "postcss src/styles/index.css -o dist/player.css --watch",
     "serve": "npx -y http-server . -p 5173 -c-1 --cors",
