@@ -7,7 +7,7 @@ yeplayer is highly customizable through its plugin system and CSS variables.
 The `Controls` plugin provides a modern UI with play/pause, volume, seek bar, time, and settings.
 
 ```typescript
-import { Player, createControls } from 'agnostic-player';
+import { Player, createControls } from 'ssassplayer';
 
 const player = new Player({ /* ... */ });
 await player.usePlugin(createControls({

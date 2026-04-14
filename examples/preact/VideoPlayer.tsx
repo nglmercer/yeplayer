@@ -1,7 +1,7 @@
 /** @jsx h */
 import { h } from 'preact';
 import { useEffect, useRef } from 'preact/hooks';
-import { Player, createControls, createGestures, createHlsPlugin } from 'agnostic-player';
+import { Player, createControls, createGestures, createHlsPlugin } from 'ssassplayer';
 import '../../dist/player.css';
 
 interface PlayerProps {
@@ -27,14 +27,14 @@ export const VideoPlayer = ({ src, poster, autoplay }: PlayerProps) => {
 
     // Add Plugins
     const setupPlugins = async () => {
-        await player.usePlugin(createControls());
-        await player.usePlugin(createGestures());
-        await player.usePlugin(createHlsPlugin());
-        
-        // Set Source
-        player.setSource(src);
+      await player.usePlugin(createControls());
+      await player.usePlugin(createGestures());
+      await player.usePlugin(createHlsPlugin());
+
+      // Set Source
+      player.setSource(src);
     }
-    
+
     setupPlugins();
 
     playerRef.current = player;
@@ -46,15 +46,15 @@ export const VideoPlayer = ({ src, poster, autoplay }: PlayerProps) => {
   }, [src, autoplay]);
 
   return (
-    <div 
-      ref={containerRef} 
+    <div
+      ref={containerRef}
       className="player-wrapper"
       style={{ width: '100%', aspectRatio: '16/9', background: '#000' }}
     >
-      <video 
-        ref={videoRef} 
-        poster={poster} 
-        crossorigin="anonymous" 
+      <video
+        ref={videoRef}
+        poster={poster}
+        crossorigin="anonymous"
       />
     </div>
   );

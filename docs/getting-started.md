@@ -5,7 +5,7 @@
 ## Installation
 
 ```bash
-npm install agnostic-player hls.js
+npm install ssassplayer hls.js
 ```
 
 ## Basic Usage
@@ -23,7 +23,7 @@ To use yeplayer, you need a video element and a container.
 ### TypeScript / JavaScript
 
 ```typescript
-import { Player } from 'agnostic-player';
+import { Player } from 'ssassplayer';
 
 const video = document.getElementById('my-video') as HTMLVideoElement;
 const container = document.querySelector('.player-container') as HTMLElement;
@@ -42,7 +42,7 @@ player.setSource('https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8');
 By default, the player is just a wrapper around the video element. You can add the built-in UI:
 
 ```typescript
-import { Player, createControls } from 'agnostic-player';
+import { Player, createControls } from 'ssassplayer';
 
 const player = new Player({ /* options */ });
 

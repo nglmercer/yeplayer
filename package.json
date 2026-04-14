@@ -1,5 +1,5 @@
 {
-  "name": "agnostic-player",
+  "name": "ssassplayer",
   "version": "0.1.0",
   "description": "Un reproductor de video/audio modular y extensible con sistema de plugins",
   "private": true,
@@ -44,12 +44,12 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/your-username/agnostic-player"
+    "url": "https://github.com/nglmercer/ssassplayer"
   },
   "bugs": {
-    "url": "https://github.com/your-username/agnostic-player/issues"
+    "url": "https://github.com/nglmercer/ssassplayer/issues"
   },
-  "homepage": "https://github.com/your-username/agnostic-player#readme",
+  "homepage": "https://github.com/nglmercer/ssassplayer#readme",
   "devDependencies": {
     "autoprefixer": "^10.5.0",
     "concurrently": "^8.2.2",

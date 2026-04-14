@@ -7,7 +7,7 @@ yeplayer includes a built-in gesture and keyboard shortcut system.
 Add the `Gestures` plugin to enable double-tap to seek, swipe to volume/brightness (on supported devices), and keyboard shortcuts.
 
 ```typescript
-import { Player, createGestures } from 'agnostic-player';
+import { Player, createGestures } from 'ssassplayer';
 
 const player = new Player({ /* ... */ });
 await player.usePlugin(createGestures({

@@ -13,7 +13,7 @@ npm install hls.js
 ## Basic HLS Integration
 
 ```typescript
-import { Player, createHlsPlugin } from 'agnostic-player';
+import { Player, createHlsPlugin } from 'ssassplayer';
 import Hls from 'hls.js';
 
 const player = new Player({
