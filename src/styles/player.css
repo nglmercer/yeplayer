@@ -1,4 +1,4 @@
-.player-wrapper {
+.player-wrapper, .player {
     position: relative;
     background: #000;
     width: 100%;

@@ -51,4 +51,9 @@
     display: none;
     align-items: center;
     justify-content: center;
+
+    .player-wrapper:hover &,
+    .player:hover & {
+        display: flex;
+    }
 }

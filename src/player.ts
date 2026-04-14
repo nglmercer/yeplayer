@@ -30,6 +30,7 @@ export class Player implements IPlayer {
   constructor(options: PlayerOptions) {
     this.media = options.media;
     this.container = options.container || this.getPlayerContainer();
+    this.container.classList.add("ap-player");
 
     // Set crossOrigin attribute if specified
     if (options.crossOrigin) {

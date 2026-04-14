@@ -1,20 +1,25 @@
 .controls {
     position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
+    bottom: 12px;
+    left: 12px;
+    right: 12px;
     z-index: 45;
     padding: 0;
-    background: linear-gradient(transparent, rgba(0,0,0,0.8));
+    background: var(--ap-surface);
+    backdrop-filter: var(--ap-blur);
+    border: 1px solid var(--ap-outline);
+    border-radius: var(--ap-radius-lg);
     opacity: 0;
-    transition: opacity 0.3s var(--ap-transition);
-    transform: translateY(10px);
+    transition: opacity 0.5s var(--ap-transition), transform 0.5s var(--ap-transition);
+    transform: translateY(20px) scale(0.98);
     pointer-events: none;
+    box-shadow: var(--ap-shadow);
 
     .player-wrapper:hover &,
+    .player:hover &,
     &.visible {
         opacity: 1;
-        transform: translateY(0);
+        transform: translateY(0) scale(1);
         pointer-events: auto;
     }
 
@@ -28,22 +33,25 @@
         .controls-left, .controls-right {
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 12px;
         }
     }
 }
 
-/* Progress bar */
+/* Progress bar - Enhanced */
 .controls-progress {
     padding: 0 var(--ap-padding);
-    margin-bottom: -12px;
+    margin-bottom: -18px;
+    transform: translateY(-8px);
     
     .progress-container {
         height: var(--ap-progress-height);
-        background: rgba(255,255,255,0.1);
-        border-radius: 4px;
+        background: rgba(255,255,255,0.08);
+        border-radius: 100px;
         cursor: pointer;
-        transition: height 0.2s;
+        transition: height 0.3s var(--ap-transition);
+        overflow: hidden;
+        position: relative;
         
         &:hover {
             height: var(--ap-progress-hover);
@@ -59,21 +67,43 @@
     .progress-played {
         background: var(--ap-primary-gradient);
         height: 100%;
-        border-radius: 4px;
-        box-shadow: 0 0 10px rgba(255, 62, 62, 0.4);
+        border-radius: 100px;
+        position: relative;
+        /* Glowing edge */
+        &::after {
+            content: "";
+            position: absolute;
+            right: 0;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background: #fff;
+            filter: blur(4px);
+            opacity: 0.8;
+        }
+    }
+    
+    .progress-loaded {
+        background: var(--ap-progress-loaded);
+        height: 100%;
+        border-radius: 100px;
+        position: absolute;
+        top: 0;
+        left: 0;
     }
     
     .scrubber {
         position: absolute;
         top: 50%;
-        right: -6px;
-        width: 14px;
-        height: 14px;
+        right: -8px;
+        width: 16px;
+        height: 16px;
         background: #fff;
         border-radius: 50%;
         transform: translateY(-50%) scale(0);
-        transition: transform 0.2s var(--ap-transition);
-        box-shadow: 0 0 8px rgba(0,0,0,0.5);
+        transition: transform 0.3s var(--ap-transition);
+        box-shadow: 0 0 15px rgba(255,255,255,0.8);
+        z-index: 2;
     }
     
     .progress-container:hover .scrubber {
@@ -81,93 +111,125 @@
     }
 }
 
-/* Buttons */
+/* Buttons - Polished */
 .ctrl.btn {
     width: var(--ap-btn-size);
     height: var(--ap-btn-size);
-    border-radius: 50%;
+    border-radius: var(--ap-radius-md);
     transition: background 0.2s, transform 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     
     &:hover {
         background: var(--ap-surface-hover);
-        transform: scale(1.1);
+        transform: translateY(-2px);
     }
     
     &:active {
-        transform: scale(0.95);
+        transform: translateY(0) scale(0.92);
     }
     
     svg {
-        width: 24px;
-        height: 24px;
-        margin: auto;
+        width: 26px;
+        height: 26px;
+        filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
     }
 }
 
 .time-display {
     font-variant-numeric: tabular-nums;
-    font-size: 14px;
-    font-weight: 500;
-    opacity: 0.9;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    opacity: 0.85;
 }
 
-/* Volume */
+/* Volume - Slim & Sleek */
 .volume-container {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 12px;
     
     input[type="range"] {
         width: 0;
         opacity: 0;
-        transition: width 0.3s, opacity 0.3s;
+        transition: width 0.4s var(--ap-transition), opacity 0.3s;
+        height: 4px;
+        appearance: none;
+        background: rgba(255,255,255,0.1);
+        border-radius: 10px;
+        outline: none;
+        
+        &::-webkit-slider-thumb {
+            appearance: none;
+            width: 12px;
+            height: 12px;
+            background: #fff;
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 0 10px rgba(0,0,0,0.5);
+        }
     }
     
     &:hover input[type="range"] {
-        width: 80px;
+        width: 90px;
         opacity: 1;
     }
 }
 
-/* Big Play Overlay */
+/* Big Play Overlay - Immersive */
 .ap-big-play {
     position: absolute;
     inset: 0;
     display: flex;
     align-items: center;
     justify-content: center;
-    z-index: 5;
+    z-index: 10;
+    background: radial-gradient(circle at center, rgba(0,0,0,0.2) 0%, transparent 70%);
+    pointer-events: none;
     
-    div {
-        background: var(--ap-surface);
-        backdrop-filter: var(--ap-blur);
+    & > div {
+        background: var(--ap-surface-thick);
+        backdrop-filter: var(--ap-blur-thick);
         border: 1px solid var(--ap-outline);
-        width: 80px;
-        height: 80px;
+        width: 96px;
+        height: 96px;
         border-radius: 50%;
         display: flex;
         align-items: center;
         justify-content: center;
-        transition: scale 0.2s;
+        transition: transform 0.4s var(--ap-transition), opacity 0.3s;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.8);
+        pointer-events: auto;
         
         &:hover {
-            scale: 1.1;
+            transform: scale(1.15);
             background: var(--ap-surface-hover);
+        }
+        
+        svg {
+            width: 48px;
+            height: 48px;
+            margin-left: 4px; /* Optical center for play icon */
         }
     }
 }
 
-/* Visual Feedback */
+/* Visual Feedback - Subtle */
 .feedback-overlay {
     position: absolute;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    background: var(--ap-surface);
-    backdrop-filter: var(--ap-blur);
-    padding: 20px;
+    background: var(--ap-surface-thick);
+    backdrop-filter: var(--ap-blur-thick);
+    padding: 24px;
     border-radius: 50%;
     pointer-events: none;
     z-index: 100;
     opacity: 0;
+    border: 1px solid var(--ap-outline);
+    transition: opacity 0.3s, transform 0.5s var(--ap-transition);
 }
+
