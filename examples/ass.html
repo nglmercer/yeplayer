@@ -68,7 +68,11 @@ Dialogue: 0,0:00:06.00,0:00:10.00,Default,,0,0,0,,{\\frz30}Rotated Text
         const video = document.getElementById('video');
         const container = document.getElementById('container');
 
-        const player = new Player({ media: video, container });
+        const player = new Player({ 
+            media: video, 
+            container: container,
+            crossOrigin: 'anonymous' 
+        });
 
         // Initialize UI
         const controls = await player.usePlugin(createControls());

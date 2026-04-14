@@ -118,10 +118,16 @@ class AssPlugin implements PlayerPluginInstance {
                 offscreenRender: false,
                 onDemandRender: true,
                 targetFps: 60,
-                // Evitar fetch a "undefined" si no se provee subUrl/content
                 // Usamos un header mínimo válido para evitar "Failed to start a track"
-                subContent: this.options.subContent || this.options.subUrl ? undefined : '[Script Info]\nScriptType: v4.00+',
+                subContent: this.options.subContent || this.options.subUrl ? undefined : '[Script Info]\nScriptType: v4.00+\nPlayResX: 384\nPlayResY: 288',
             });
+
+            // Handle Resize
+            const resizeObserver = new ResizeObserver(() => {
+                this.jassub?.resize();
+            });
+            resizeObserver.observe(video);
+            this.cleanupListeners.push(() => resizeObserver.disconnect());
         } catch (e) {
             console.error("AssPlugin: Failed to initialize JASSUB", e);
         }

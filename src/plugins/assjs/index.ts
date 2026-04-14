@@ -185,6 +185,15 @@ class AssJsPlugin implements PlayerPluginInstance {
                 resampling: this.options.resampling || 'video_height',
                 ...this.options
             });
+
+            // Handle resize for ASS.js
+            const resizeObserver = new ResizeObserver(() => {
+                if (this.assInstance && typeof (this.assInstance as any).resample === 'function') {
+                    (this.assInstance as any).resample();
+                }
+            });
+            resizeObserver.observe(video);
+            this.cleanupListeners.push(() => resizeObserver.disconnect());
         } catch (e) {
             console.error("AssJsPlugin: Failed to initialize ASS.js", e);
         }
