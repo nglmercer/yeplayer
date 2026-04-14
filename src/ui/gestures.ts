@@ -22,6 +22,7 @@ export class Gestures implements PlayerPluginInstance {
   private fsBtn!: HTMLButtonElement;
   private lastTap = 0;
   private lastTapX = 0;
+  private isPointerDown = false;
   private tapTimer: number | null = null;
   private pressTimer: number | null = null;
   private pressedBoost = false;
@@ -80,6 +81,7 @@ export class Gestures implements PlayerPluginInstance {
     });
 
     area.addEventListener('pointerdown', e => {
+      this.isPointerDown = true;
       if (this.pressTimer) window.clearTimeout(this.pressTimer);
       this.pressTimer = window.setTimeout(() => {
         this.pressedBoost = true;
@@ -92,6 +94,8 @@ export class Gestures implements PlayerPluginInstance {
     // Volume drag removed
 
     area.addEventListener('pointerup', e => {
+      if (!this.isPointerDown) return;
+      this.isPointerDown = false;
       if (this.pressTimer) window.clearTimeout(this.pressTimer);
       if (this.pressedBoost) {
         this.pressedBoost = false;

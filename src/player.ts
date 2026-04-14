@@ -246,6 +246,9 @@ export class Player implements IPlayer {
 
   async play(): Promise<void> {
     try {
+      if (!this.media.src && !this.media.srcObject) {
+        return;
+      }
       await this.media.play();
     } catch (error) {
       console.warn("Playback failed or interrupted:", error);
