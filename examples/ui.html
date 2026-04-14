@@ -77,8 +77,7 @@
     <h1>UI Components Demo</h1>
 
     <div class="wrapper" id="container">
-        <video id="video" src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4"
-            playsinline></video>
+        <video id="video" crossorigin="anonymous" playsinline></video>
     </div>
 
     <section>
@@ -91,16 +90,19 @@
     </section>
 
     <script type="module">
-        import { Player, Menu, Dropdown, Controls, Gestures, createGestures, createControls } from "../dist/index.js";
+        import { Player, Menu, Dropdown, Controls, Gestures, createGestures, createControls, createHlsPlugin } from "../dist/index.js";
 
         const video = document.getElementById('video');
         const container = document.getElementById('container');
 
-        const player = new Player({ media: video });
+        const player = new Player({ media: video, container });
+        player.setSource("https://vjs.zencdn.net/v/oceans.mp4");
+
         const gestures = await player.usePlugin(createGestures());
 
         // Custom Controls with added button
         const controls = await player.usePlugin(createControls());
+        await player.usePlugin(createHlsPlugin());
 
         // 1. Setup Main Menu
         const menu = new Menu(container, [

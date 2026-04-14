@@ -38,7 +38,7 @@
     </div>
 
     <script type="module">
-        import { Player, createControls, createGestures, Menu, createAssPlugin } from "../dist/index.js";
+        import { Player, createControls, createGestures, Menu, createAssPlugin, createHlsPlugin } from "../dist/index.js";
 
         // Define a sample ASS subtitle file content
         // This includes some basic styling and positioning effects
@@ -68,11 +68,12 @@ Dialogue: 0,0:00:06.00,0:00:10.00,Default,,0,0,0,,{\\frz30}Rotated Text
         const video = document.getElementById('video');
         const container = document.getElementById('container');
 
-        const player = new Player({ media: video });
+        const player = new Player({ media: video, container });
 
         // Initialize UI
         const controls = await player.usePlugin(createControls());
         await player.usePlugin(createGestures());
+        await player.usePlugin(createHlsPlugin());
 
         // Initialize Settings Menu
         const menu = new Menu(container, [

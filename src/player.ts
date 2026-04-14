@@ -239,8 +239,13 @@ export class Player implements IPlayer {
     this.events.off(type, handler as any);
   }
 
-  play() {
-    return this.media.play();
+  async play(): Promise<void> {
+    try {
+      await this.media.play();
+    } catch (error) {
+      console.warn("Playback failed or interrupted:", error);
+      throw error;
+    }
   }
   pause() {
     this.media.pause();
