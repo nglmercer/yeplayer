@@ -12,7 +12,7 @@
     }
 }
 
-.ap-panel {
+.ap-panel, .ap-subpanel {
     position: absolute;
     bottom: 86px;
     right: 16px;
@@ -24,7 +24,18 @@
     min-width: 280px;
     box-shadow: 0 20px 80px rgba(0,0,0,0.8);
     overflow: hidden;
+    transition: transform 0.4s var(--ap-transition), opacity 0.4s var(--ap-transition);
+}
+
+.ap-panel {
+    z-index: 52;
     animation: ap-panel-in 0.4s var(--ap-transition);
+}
+
+.ap-subpanel {
+    z-index: 53;
+    display: none;
+    /* Subpanel specific initial state for JS to toggle */
 }
 
 @keyframes ap-panel-in {
@@ -49,6 +60,12 @@
     padding: 12px 20px;
     transition: background 0.2s, color 0.2s;
     cursor: pointer;
+    border: none;
+    background: none;
+    outline: none !important;
+    text-align: left;
+    color: inherit;
+    font: inherit;
     
     &:hover {
         background: var(--ap-surface-hover);
@@ -88,6 +105,54 @@
     font-weight: 500;
 }
 
+.ap-value {
+    color: var(--ap-accent);
+    font-weight: 700;
+}
+
+.ap-arrow {
+    width: 16px;
+    height: 16px;
+    position: relative;
+    opacity: 0.5;
+    
+    &::after {
+        content: "";
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 6px;
+        height: 6px;
+        border-top: 2px solid #fff;
+        border-right: 2px solid #fff;
+        transform: translate(-70%, -50%) rotate(45deg);
+    }
+}
+
+.ap-check {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.1);
+    position: relative;
+    transition: background 0.2s, transform 0.2s;
+    
+    &.ap-check-on {
+        background: var(--ap-primary);
+        &::after {
+            content: "";
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 8px;
+            height: 4px;
+            border-left: 2px solid #fff;
+            border-bottom: 2px solid #fff;
+            transform: translate(-50%, -60%) rotate(-45deg);
+        }
+    }
+}
+
 .ap-toggle {
     width: 42px;
     height: 24px;
@@ -120,4 +185,5 @@
         width: 22px;
     }
 }
+
 
