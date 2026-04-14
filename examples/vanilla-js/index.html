@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -18,6 +19,7 @@
             justify-content: center;
             min-height: 100vh;
         }
+
         .container {
             width: 80%;
             max-width: 1000px;
@@ -25,14 +27,18 @@
             background: black;
             border-radius: 12px;
             overflow: hidden;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
         }
-        h1 { margin-bottom: 2rem; }
+
+        h1 {
+            margin-bottom: 2rem;
+        }
     </style>
 </head>
+
 <body>
     <h1>yeplayer Vanilla Example</h1>
-    
+
     <div class="container player-wrapper" id="player-container">
         <video id="video" crossorigin="anonymous"></video>
     </div>
@@ -60,4 +66,5 @@
         player.setSource('https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8');
     </script>
 </body>
+
 </html>

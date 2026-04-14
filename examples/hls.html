@@ -84,7 +84,7 @@
         STREAMS.forEach(stream => {
             const btn = document.createElement('button');
             btn.textContent = `Load ${stream.label}`;
-            btn.onclick = () => loadSource(stream.url);
+            btn.onclick = () => window.loadSource(stream.url);
             buttonContainer.appendChild(btn);
         });
 
@@ -93,6 +93,10 @@
 
         const player = new Player({ media: video });
 
+        window.loadSource = (url) => {
+            player.setSource(url);
+            player.play();
+        };
         // Initialize UI
         const controls = await player.usePlugin(createControls());
         await player.usePlugin(createGestures());
@@ -103,7 +107,7 @@
             hlsConfig: { debug: false }
         })).then(() => {
             // Load first stream by default
-            loadSource(STREAMS[0].url);
+            window.loadSource(STREAMS[0].url);
         });
 
         // Setup Settings Menu
@@ -212,10 +216,6 @@
             menu.setGroups(groups);
         }
 
-        window.loadSource = (url) => {
-            player.setSource(url);
-            player.play();
-        };
     </script>
 </body>
 

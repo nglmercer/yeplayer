@@ -1,3 +1,4 @@
+/** @jsx h */
 import { h } from 'preact';
 import { useEffect, useRef } from 'preact/hooks';
 import { Player, createControls, createGestures, createHlsPlugin } from 'agnostic-player';
