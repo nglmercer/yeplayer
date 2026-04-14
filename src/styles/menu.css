@@ -196,6 +196,9 @@
     background: rgba(255, 255, 255, 0.1);
     position: relative;
     transition: background 0.2s, transform 0.2s;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 
     &.ap-check-on {
         background: var(--ap-accent);

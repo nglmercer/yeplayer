@@ -261,7 +261,7 @@ export class Menu {
     const backBtn = document.createElement("button");
     backBtn.type = "button";
     backBtn.className = "ap-back-btn";
-    backBtn.appendChild(createSVG(ICONS.menuBack));
+    backBtn.appendChild(createSVG(ICONS.menuBack, { size: 16, color: "var(--ap-on-surface-variant)" }));
     backBtn.onclick = (e) => {
       e.stopPropagation();
       this.closeSubpanel();
@@ -335,11 +335,11 @@ export class Menu {
     span.className = "ap-icon";
     if (!icon) return span;
     if (typeof icon === "string") {
-        if (ICONS[icon as keyof typeof ICONS]) {
-            span.appendChild(createSVG(ICONS[icon as keyof typeof ICONS]));
-        } else {
-            span.innerHTML = icon;
-        }
+      if (ICONS[icon as keyof typeof ICONS]) {
+        span.appendChild(createSVG(ICONS[icon as keyof typeof ICONS]));
+      } else {
+        span.innerHTML = icon;
+      }
     } else span.appendChild(icon);
     return span;
   }
