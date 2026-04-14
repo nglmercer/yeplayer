@@ -9,7 +9,7 @@
     }
 
     button {
-        padding: 0;
+        padding: auto;
         border: none;
         background: none;
         cursor: pointer;

@@ -111,7 +111,7 @@ export class Controls implements PlayerPluginInstance {
         // Big Play Button (Initial/Paused State)
         this.bigPlayBtn = document.createElement("div");
         this.bigPlayBtn.className = "ap-big-play";
-        this.bigPlayBtn.appendChild(createSVG(this.icons.playBig, 64)); // Size 64
+        this.bigPlayBtn.appendChild(createSVG(this.icons.playBig, { size: 64, color: "var(--ap-on-surface)" }));
         this.player.getContainer().appendChild(this.bigPlayBtn);
 
         // Progress
@@ -349,7 +349,7 @@ export class Controls implements PlayerPluginInstance {
         this.feedbackOverlay.style.opacity = '0';
 
         // Create icon wrapper
-        const icon = createSVG(iconContent, 48); // Bigger size for feedback
+        const icon = createSVG(iconContent, { size: 48, color: "var(--ap-on-surface)" }); // Bigger size for feedback
         this.feedbackOverlay.appendChild(icon);
 
         // Animate

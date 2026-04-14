@@ -187,14 +187,14 @@ export class Gestures implements PlayerPluginInstance {
     this.player.seek(to);
     const el = side === 'left' ? this.left : this.right;
     el.innerHTML = '';
-    el.appendChild(createSVG(side === 'left' ? ICONS.back : ICONS.forward, 48));
+    el.appendChild(createSVG(side === 'left' ? ICONS.back : ICONS.forward, { size: 48, color: "var(--ap-on-surface)" }));
     el.style.display = 'flex';
     window.setTimeout(() => { el.style.display = 'none'; }, 500);
   }
 
   private showCenter(iconPath: string) {
     this.center.innerHTML = '';
-    this.center.appendChild(createSVG(iconPath, 48));
+    this.center.appendChild(createSVG(iconPath, { size: 48, color: "var(--ap-on-surface)" }));
     this.center.style.display = 'flex';
 
     // Reset animation/timeout

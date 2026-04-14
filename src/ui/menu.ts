@@ -224,7 +224,7 @@ export class Menu {
         item.options.find((o) => o.value === item.value)?.label || "";
       const arrow = document.createElement("span");
       arrow.className = "ap-arrow";
-      arrow.appendChild(createSVG(ICONS.menuArrow, 16));
+      arrow.appendChild(createSVG(ICONS.menuArrow, { size: 16, color: "var(--ap-on-surface-variant)" }));
       right.appendChild(val);
       right.appendChild(arrow);
       row.onclick = (e) => {
@@ -289,7 +289,7 @@ export class Menu {
       const check = document.createElement("span");
       check.className =
         "ap-check" + (opt.value === item.value ? " ap-check-on" : "");
-      check.appendChild(createSVG(ICONS.check, 14));
+      check.appendChild(createSVG(ICONS.check, { size: 14, color: "var(--ap-primary)" }));
       left.appendChild(label);
       right.appendChild(check);
       row.appendChild(left);

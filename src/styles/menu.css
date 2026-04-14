@@ -2,17 +2,18 @@
     position: absolute;
     inset: 0;
     z-index: 50;
-    background: rgba(0,0,0,0.3);
+    background: rgba(0, 0, 0, 0.3);
     backdrop-filter: blur(4px);
     display: none;
     transition: opacity 0.3s;
-    
+
     &.ap-overlay-open {
         display: block;
     }
 }
 
-.ap-panel, .ap-subpanel {
+.ap-panel,
+.ap-subpanel {
     position: absolute;
     bottom: 86px;
     right: 16px;
@@ -20,9 +21,9 @@
     backdrop-filter: var(--ap-blur-thick);
     border: 1px solid var(--ap-outline);
     border-radius: var(--ap-radius-lg);
-    padding: 10px 0;
+    padding: 0.5rem;
     min-width: 280px;
-    box-shadow: 0 20px 80px rgba(0,0,0,0.8);
+    box-shadow: 0 20px 80px rgba(0, 0, 0, 0.8);
     overflow: hidden;
     transition: transform 0.5s var(--ap-transition), opacity 0.4s var(--ap-transition);
 }
@@ -30,7 +31,7 @@
 .ap-panel {
     z-index: 52;
     animation: ap-panel-in 0.4s var(--ap-transition);
-    
+
     &.ap-panel-hidden {
         transform: translateX(-30px);
         opacity: 0;
@@ -43,8 +44,10 @@
     opacity: 0;
     transform: translateX(30px);
     pointer-events: none;
-    display: block !important; /* Managed by classes now */
-    
+    display: block !important;
+    /* Managed by classes now */
+    gap: 0.5rem;
+
     &.ap-subpanel-visible {
         opacity: 1;
         transform: translateX(0);
@@ -68,11 +71,12 @@
     align-items: center;
     justify-content: center;
     transition: background 0.2s;
-    
+    background-color: var(--ap-surface-thick);
+
     &:hover {
         background: var(--ap-surface-hover);
     }
-    
+
     svg {
         width: 20px;
         height: 20px;
@@ -100,15 +104,19 @@
     text-align: left;
     color: inherit;
     font: inherit;
-    
+
     &:hover {
         background: var(--ap-surface-hover);
-        .ap-label { color: #fff; }
+
+        .ap-label {
+            color: #fff;
+        }
     }
-    
+
     &.ap-row-selected {
-        background: rgba(255,255,255,0.05);
+        background: rgba(255, 255, 255, 0.05);
         transform: scale(1.02);
+
         .ap-label {
             color: var(--ap-accent);
         }
@@ -167,7 +175,7 @@
     height: 16px;
     position: relative;
     opacity: 0.5;
-    
+
     &::after {
         content: "";
         position: absolute;
@@ -185,12 +193,13 @@
     width: 18px;
     height: 18px;
     border-radius: 50%;
-    background: rgba(255,255,255,0.1);
+    background: rgba(255, 255, 255, 0.1);
     position: relative;
     transition: background 0.2s, transform 0.2s;
-    
+
     &.ap-check-on {
         background: var(--ap-accent);
+
         &::after {
             content: "";
             position: absolute;
@@ -208,11 +217,11 @@
 .ap-toggle {
     width: 42px;
     height: 24px;
-    background: rgba(255,255,255,0.12);
+    background: rgba(255, 255, 255, 0.12);
     border-radius: 100px;
     position: relative;
     transition: background 0.3s var(--ap-transition);
-    
+
     &::after {
         content: "";
         position: absolute;
@@ -223,19 +232,18 @@
         top: 3px;
         left: 3px;
         transition: transform 0.3s var(--ap-transition), width 0.3s;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
     }
-    
+
     &.ap-toggle-on {
         background: var(--ap-primary);
+
         &::after {
             transform: translateX(18px);
         }
     }
-    
+
     &:active::after {
         width: 22px;
     }
 }
-
-

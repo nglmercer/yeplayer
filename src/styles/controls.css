@@ -29,8 +29,9 @@
         justify-content: space-between;
         height: var(--ap-controls-height);
         padding: 0 var(--ap-padding);
-        
-        .controls-left, .controls-right {
+
+        .controls-left,
+        .controls-right {
             display: flex;
             align-items: center;
             gap: 12px;
@@ -43,32 +44,33 @@
     padding: 0 var(--ap-padding);
     margin-bottom: -18px;
     transform: translateY(-8px);
-    
+
     .progress-container {
         height: var(--ap-progress-height);
-        background: rgba(255,255,255,0.08);
+        background: rgba(255, 255, 255, 0.08);
         border-radius: 100px;
         cursor: pointer;
         transition: height 0.3s var(--ap-transition);
         overflow: hidden;
         position: relative;
-        
+
         &:hover {
             height: var(--ap-progress-hover);
         }
     }
-    
+
     .progress-bar {
         position: relative;
         height: 100%;
         width: 100%;
     }
-    
+
     .progress-played {
         background: var(--ap-primary-gradient);
         height: 100%;
         border-radius: 100px;
         position: relative;
+
         /* Glowing edge */
         &::after {
             content: "";
@@ -82,7 +84,7 @@
             opacity: 0.8;
         }
     }
-    
+
     .progress-loaded {
         background: var(--ap-progress-loaded);
         height: 100%;
@@ -91,7 +93,7 @@
         top: 0;
         left: 0;
     }
-    
+
     .scrubber {
         position: absolute;
         top: 50%;
@@ -102,10 +104,10 @@
         border-radius: 50%;
         transform: translateY(-50%) scale(0);
         transition: transform 0.3s var(--ap-transition);
-        box-shadow: 0 0 15px rgba(255,255,255,0.8);
+        box-shadow: 0 0 15px rgba(255, 255, 255, 0.8);
         z-index: 2;
     }
-    
+
     .progress-container:hover .scrubber {
         transform: translateY(-50%) scale(1);
     }
@@ -120,20 +122,21 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    
+    padding: 0;
+
     &:hover {
         background: var(--ap-surface-hover);
         transform: translateY(-2px);
     }
-    
+
     &:active {
         transform: translateY(0) scale(0.92);
     }
-    
+
     svg {
         width: 26px;
         height: 26px;
-        filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+        filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
     }
 }
 
@@ -150,17 +153,17 @@
     display: flex;
     align-items: center;
     gap: 12px;
-    
+
     input[type="range"] {
         width: 0;
         opacity: 0;
         transition: width 0.4s var(--ap-transition), opacity 0.3s;
         height: 4px;
         appearance: none;
-        background: rgba(255,255,255,0.1);
+        background: rgba(255, 255, 255, 0.1);
         border-radius: 10px;
         outline: none;
-        
+
         &::-webkit-slider-thumb {
             appearance: none;
             width: 12px;
@@ -168,10 +171,10 @@
             background: #fff;
             border-radius: 50%;
             cursor: pointer;
-            box-shadow: 0 0 10px rgba(0,0,0,0.5);
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
         }
     }
-    
+
     &:hover input[type="range"] {
         width: 90px;
         opacity: 1;
@@ -186,10 +189,10 @@
     align-items: center;
     justify-content: center;
     z-index: 10;
-    background: radial-gradient(circle at center, rgba(0,0,0,0.2) 0%, transparent 70%);
+    background: radial-gradient(circle at center, rgba(0, 0, 0, 0.2) 0%, transparent 70%);
     pointer-events: none;
-    
-    & > div {
+
+    &>div {
         background: var(--ap-surface-thick);
         backdrop-filter: var(--ap-blur-thick);
         border: 1px solid var(--ap-outline);
@@ -200,18 +203,19 @@
         align-items: center;
         justify-content: center;
         transition: transform 0.4s var(--ap-transition), opacity 0.3s;
-        box-shadow: 0 20px 60px rgba(0,0,0,0.8);
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
         pointer-events: auto;
-        
+
         &:hover {
             transform: scale(1.15);
             background: var(--ap-surface-hover);
         }
-        
+
         svg {
             width: 48px;
             height: 48px;
-            margin-left: 4px; /* Optical center for play icon */
+            margin-left: 4px;
+            /* Optical center for play icon */
         }
     }
 }
@@ -232,4 +236,3 @@
     border: 1px solid var(--ap-outline);
     transition: opacity 0.3s, transform 0.5s var(--ap-transition);
 }
-

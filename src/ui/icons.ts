@@ -15,14 +15,28 @@ export const ICONS = {
     check: '<path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>'
 };
 
-export function createSVG(path: string | HTMLElement, size: number = 24): HTMLElement | SVGSVGElement {
+export interface CreateSVGOptions {
+    size?: number;
+    color?: string;
+    className?: string;
+}
+
+export function createSVG(path: string | HTMLElement, options: number | CreateSVGOptions = 24): HTMLElement | SVGSVGElement {
     if (path instanceof HTMLElement) return path;
+
+    const opts: CreateSVGOptions = typeof options === 'number' ? { size: options } : options;
+    const { size = 24, color = "var(--ye-icon-color, currentColor)", className } = opts;
+
     const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
     svg.setAttribute("viewBox", "0 0 24 24");
     svg.setAttribute("width", size.toString());
     svg.setAttribute("height", size.toString());
-    svg.style.fill = "currentColor";
+    
+    if (className) svg.classList.add(className);
+    
+    svg.style.fill = color;
     svg.style.display = "block";
     svg.innerHTML = path;
+    
     return svg;
 }
