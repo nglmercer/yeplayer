@@ -1,6 +1,6 @@
-# yeplayer Examples
+# ssassplayer Examples
 
-This directory contains examples of how to integrate **yeplayer** into different environments.
+This directory contains examples of how to integrate **ssassplayer** into different environments.
 
 ## [Vanilla JS](./vanilla-js/index.html)
 A pure HTML/JS implementation using ES modules. Ideal for static sites or simple integrations.

@@ -5,7 +5,6 @@ import preact from "./examples/preact/index.html";
 import vanilla from "./examples/vanilla-js/index.html";
 
 /**
- * Yeplayer Fullstack Development Server
  * leverages Bun's integrated bundler and HMR.
  */
 const server = serve({
@@ -53,7 +52,6 @@ const server = serve({
 
 console.clear();
 console.log(`
-  \x1b[36m🚀 Yeplayer Fullstack Server\x1b[0m
   -----------------------------
   \x1b[32mMain UI:\x1b[0m   ${server.url}
   \x1b[32mPreact:\x1b[0m    ${server.url}preact

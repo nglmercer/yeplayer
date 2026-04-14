@@ -246,7 +246,9 @@ export class Player implements IPlayer {
 
   async play(): Promise<void> {
     try {
-      if (!this.media.src && !this.media.srcObject) {
+      // When using hls.js, the src is set via MediaSource (blob: URL) which may
+      // not be attached yet. Don't bail if hls-plugin is handling the source.
+      if (!this.media.src && !this.media.srcObject && !this.hasPlugin("hls-plugin")) {
         return;
       }
       await this.media.play();
@@ -278,8 +280,18 @@ export class Player implements IPlayer {
     this.media.playbackRate = rate;
   }
   setSource(url: string) {
-    this.media.src = url;
-    this.media.load();
+    const isHls = url.toLowerCase().split('?')[0].endsWith(".m3u8") || url.includes(".m3u8");
+    const supportsNativeHls = !!this.media.canPlayType("application/vnd.apple.mpegurl");
+
+    // Avoid setting native src if we have HLS plugin and no native support
+    // Chrome/Firefox will fail if we set a .m3u8 src directly
+    if (isHls && !supportsNativeHls && this.hasPlugin("hls-plugin")) {
+      console.log("Player: HLS detected, deferring to hls-plugin");
+    } else {
+      this.media.src = url;
+      this.media.load();
+    }
+
     this.events.emit("sourcechange", url);
   }
 

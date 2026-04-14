@@ -1,6 +1,6 @@
 # Gestures & Shortcuts
 
-yeplayer includes a built-in gesture and keyboard shortcut system.
+ssassplayer includes a built-in gesture and keyboard shortcut system.
 
 ## Enabling Gestures
 

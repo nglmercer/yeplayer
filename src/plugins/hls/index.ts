@@ -29,6 +29,7 @@ export function createHlsPlugin(options: HlsPluginOptions = {}): PluginManifest 
 
 class HlsPlugin implements PlayerPluginInstance {
     private hlsInstance: Hls | null = null;
+    private HlsClass: typeof Hls | null = null;
     private qualityCallback: ((level: QualityLevel) => void) | null = null;
     private audioTrackCallback: ((track: AudioTrack) => void) | null = null;
     private cleanupListeners: (() => void)[] = [];
@@ -40,16 +41,29 @@ class HlsPlugin implements PlayerPluginInstance {
     ) {
     }
 
-    install() {
+    async install() {
         // Attempt to locate Hls constructor
         // 1. Injected via options
         // 2. Global window.Hls
+        // 3. Dynamic import from 'hls.js' (works in all bundlers/browsers)
         let HlsClass = this.options.hls;
 
         if (!HlsClass && typeof window !== 'undefined' && (window as any).Hls) {
             HlsClass = (window as any).Hls as typeof Hls;
         }
 
+        // Auto-import hls.js if not provided via options or window global
+        if (!HlsClass) {
+            try {
+                const hlsModule = await import("hls.js");
+                HlsClass = hlsModule.default || hlsModule;
+                console.log("HLS Plugin: Auto-imported hls.js");
+            } catch (e) {
+                console.warn("HLS Plugin: hls.js not available. Install it with: npm install hls.js");
+            }
+        }
+
+        this.HlsClass = HlsClass || null;
         const video = this.player.media as HTMLVideoElement;
 
         // Check if we should use hls.js
@@ -83,11 +97,21 @@ class HlsPlugin implements PlayerPluginInstance {
 
             // Handle source changes from the player
             const removeListener = this.player.on("sourcechange", (url: string) => {
-                if (url.includes(".m3u8")) {
+                if (url.toLowerCase().split('?')[0].endsWith(".m3u8") || url.includes(".m3u8")) {
                     if (this.hlsInstance) {
                         console.log("HLS: Loading source", url);
-                        this.hlsInstance.loadSource(url);
+
+                        // Detach from any previous source first to ensure clean state
+                        this.hlsInstance.detachMedia();
+
+                        // Clear any native src to avoid Firefox "not suitable" errors
+                        if (video.src) {
+                            video.removeAttribute('src');
+                            video.load();
+                        }
+
                         this.hlsInstance.attachMedia(video);
+                        this.hlsInstance.loadSource(url);
                     }
                 } else {
                     if (this.hlsInstance) {
@@ -97,16 +121,23 @@ class HlsPlugin implements PlayerPluginInstance {
             });
             this.cleanupListeners.push(removeListener);
 
-            // Initial check
-            if (video.src && video.src.includes(".m3u8")) {
-                this.hlsInstance!.loadSource(video.src);
+            // Initial check for already set source
+            const currentSrc = (this.player as any).currentSource || video.src;
+            if (currentSrc && (currentSrc.includes(".m3u8"))) {
+                if (video.src) {
+                    video.removeAttribute('src');
+                    video.load();
+                }
                 this.hlsInstance!.attachMedia(video);
+                this.hlsInstance!.loadSource(currentSrc);
             }
         } else if (
             video.canPlayType("application/vnd.apple.mpegurl")
         ) {
             // Native HLS support (Safari)
             console.log("Using native HLS support");
+        } else {
+            console.warn("HLS Plugin: No HLS support available (hls.js not found and no native support)");
         }
     }
 
@@ -174,8 +205,8 @@ class HlsPlugin implements PlayerPluginInstance {
 
         // Listen for changes
         if (this.hlsInstance) {
-            const HlsClass = this.options.hls || (window as any).Hls;
-            this.hlsInstance.on(HlsClass.Events.AUDIO_TRACK_SWITCHED, (event: any, data: any) => {
+            const HlsClass = this.HlsClass;
+            this.hlsInstance.on(HlsClass!.Events.AUDIO_TRACK_SWITCHED, (event: any, data: any) => {
                 console.log("HLS: Audio track switched", data);
                 if (this.audioTrackCallback) {
                     const track = provider.getActiveTrack();
@@ -186,18 +217,18 @@ class HlsPlugin implements PlayerPluginInstance {
     }
     private setupTextTrackProvider() {
         // Hls events for subtitles
-        const HlsClass = this.options.hls || (window as any).Hls;
+        const HlsClass = this.HlsClass;
 
         // Listen for track updates
         if (this.hlsInstance) {
-            this.hlsInstance.on(HlsClass.Events.SUBTITLE_TRACKS_UPDATED, () => {
+            this.hlsInstance.on(HlsClass!.Events.SUBTITLE_TRACKS_UPDATED, () => {
                 // We might want to emit an event here if the main API supported "tracks changed" events generally
                 // For now, the UI polls getters or we can just rely on manual refresh
                 // But properly, we should re-emit texttrackchange or something similar if the list changes?
                 // The current TextTrackProvider interface assumes static list or callbacks on active track change.
             });
 
-            this.hlsInstance.on(HlsClass.Events.SUBTITLE_TRACK_SWITCH, (event: any, data: any) => {
+            this.hlsInstance.on(HlsClass!.Events.SUBTITLE_TRACK_SWITCH, (event: any, data: any) => {
                 if (this.textTrackCallback) {
                     const track = provider.getActiveTrack();
                     this.textTrackCallback(track);

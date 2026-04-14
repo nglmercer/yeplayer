@@ -1,6 +1,6 @@
-# yeplayer Documentation
+# ssassplayer Documentation
 
-Welcome to the **yeplayer** documentation. This library provides a highly customizable, video player experience for the web.
+Welcome to the **ssassplayer** documentation. This library provides a highly customizable, video player experience for the web.
 
 ## Quick Links
 

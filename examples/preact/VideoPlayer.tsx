@@ -1,6 +1,6 @@
 //import { h } from 'preact';
 import { useEffect, useRef } from 'preact/hooks';
-import { Player, createControls, createGestures, createHlsPlugin } from 'ssassplayer';
+import { Player, createControls, createGestures, createHlsPlugin } from '../../src';
 import '../../dist/player.css';
 
 interface SubtitleTrack {
@@ -29,21 +29,46 @@ export const VideoPlayer = ({ src, poster, autoplay, subtitles, onEnded }: Playe
     const player = new Player({
       media: videoRef.current,
       container: containerRef.current,
-      autoplay: !!autoplay
+      autoplay: false // Handle explicitly after plugins/source
     });
 
     const setupPlugins = async () => {
-      await player.usePlugin(createHlsPlugin());
-      
-      if (src) {
-        player.setSource(src);
-      }
+      try {
+        // 1. Install plugins first (HLS plugin now auto-imports hls.js)
+        await player.usePlugin(createHlsPlugin());
+        await player.usePlugin(createControls());
+        await player.usePlugin(createGestures());
 
-      await player.usePlugin(createControls());
-      await player.usePlugin(createGestures());
+        // 2. Set source — the HLS plugin's sourcechange listener will handle .m3u8
+        if (src) {
+          player.setSource(src);
+        }
 
-      if (autoplay) {
-        player.play().catch(e => console.warn("Autoplay blocked:", e));
+        // 3. Handle autoplay — wait for the media to be ready
+        // Firefox requires the MediaSource to be fully attached and manifest parsed
+        // before play() can be called. Use canplay event which fires after hls.js
+        // has attached and parsed the manifest.
+        if (autoplay) {
+          const attemptPlay = () => {
+            player.play().catch(e => {
+              console.warn("Autoplay blocked, muting video to allow playback");
+              if (videoRef.current) {
+                videoRef.current.muted = true;
+                player.play().catch(err => console.log("Muted autoplay also blocked:", err));
+              }
+            });
+          };
+
+          // Wait for canplay — this fires after hls.js has attached MediaSource
+          // and parsed the manifest on all browsers including Firefox
+          if (videoRef.current!.readyState >= 3) {
+            attemptPlay();
+          } else {
+            videoRef.current!.addEventListener('canplay', attemptPlay, { once: true });
+          }
+        }
+      } catch (error) {
+        console.error("Error setting up player plugins:", error);
       }
     }
 
@@ -70,6 +95,7 @@ export const VideoPlayer = ({ src, poster, autoplay, subtitles, onEnded }: Playe
         poster={poster}
         className="w-full h-full object-contain"
         crossorigin="anonymous"
+        playsinline
       />
     </div>
   );

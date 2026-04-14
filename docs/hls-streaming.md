@@ -1,6 +1,6 @@
 # HLS Streaming
 
-yeplayer provides a powerful HLS plugin powered by `hls.js`.
+ssassplayer provides a powerful HLS plugin powered by `hls.js`.
 
 ## Setup
 

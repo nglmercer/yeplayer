@@ -1,6 +1,6 @@
 # UI Customization
 
-yeplayer is highly customizable through its plugin system and CSS variables.
+ssassplayer is highly customizable through its plugin system and CSS variables.
 
 ## Using Controls
 

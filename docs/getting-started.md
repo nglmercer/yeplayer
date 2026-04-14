@@ -1,6 +1,6 @@
-# Getting Started with yeplayer
+# Getting Started with ssassplayer
 
-**yeplayer** is a modern, framework-agnostic video player built with TypeScript, designed for performance and customizability.
+**ssassplayer** is a modern, framework-agnostic video player built with TypeScript, designed for performance and customizability.
 
 ## Installation
 
@@ -10,7 +10,7 @@ npm install ssassplayer hls.js
 
 ## Basic Usage
 
-To use yeplayer, you need a video element and a container.
+To use ssassplayer, you need a video element and a container.
 
 ### HTML
 
