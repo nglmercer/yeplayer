@@ -72,6 +72,7 @@
     justify-content: center;
     transition: background 0.2s;
     background-color: var(--ap-surface-thick);
+    padding: 0;
 
     &:hover {
         background: var(--ap-surface-hover);
