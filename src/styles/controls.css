@@ -236,3 +236,30 @@
     border: 1px solid var(--ap-outline);
     transition: opacity 0.3s, transform 0.5s var(--ap-transition);
 }
+
+/* Loader Spinner */
+.ap-loader {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 100;
+    pointer-events: none;
+    display: none;
+    
+    svg {
+        width: 64px;
+        height: 64px;
+        animation: ap-spin 1s linear infinite;
+        filter: drop-shadow(0 0 10px rgba(0, 0, 0, 0.5));
+    }
+
+    &.visible {
+        display: block;
+    }
+}
+
+@keyframes ap-spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}

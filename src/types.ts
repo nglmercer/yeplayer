@@ -19,6 +19,10 @@ export interface PlayerEvents extends EventMap {
   audioplayerchange: [AudioTrack];
   pipchange: [boolean];
   thumbnailsloaded: [ThumbnailData[]];
+  waiting: [];
+  stalled: [];
+  canplaythrough: [];
+  playing: [];
 }
 
 // Plugin System Types

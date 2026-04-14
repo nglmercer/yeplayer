@@ -12,7 +12,8 @@ export const ICONS = {
     boost: '<path fill="currentColor" d="M12 2l4 8H8l4-8Zm0 20l-4-8h8l-4 8Z"/>',
     menuArrow: '<path fill="currentColor" d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/>',
     menuBack: '<path fill="currentColor" d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/>',
-    check: '<path fill="currentColor" d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>'
+    check: '<path fill="currentColor" d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>',
+    loading: '<path fill="currentColor" d="M12,4V2A10,10 0 0,0 2,12H4A8,8 0 0,1 12,4Z"/>'
 };
 
 export interface CreateSVGOptions {

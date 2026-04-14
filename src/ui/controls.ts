@@ -13,6 +13,7 @@ export interface ControlIcons {
     // Feedback icons
     playBig?: string | HTMLElement;
     pauseBig?: string | HTMLElement;
+    loading?: string | HTMLElement;
 }
 
 export interface ControlsOptions {
@@ -28,7 +29,8 @@ const DEFAULT_ICONS = {
     fullscreen: ICONS.fullscreen,
     exitFullscreen: ICONS.exitFullscreen,
     playBig: ICONS.play,
-    pauseBig: ICONS.pause
+    pauseBig: ICONS.pause,
+    loading: ICONS.loading
 };
 
 function formatTime(seconds: number): string {
@@ -66,6 +68,7 @@ export class Controls implements PlayerPluginInstance {
     private timeDisplay!: HTMLElement;
     private fullscreenBtn!: HTMLElement;
     private settingsBtn!: HTMLElement;
+    private loader!: HTMLElement;
 
     // Feedback
     private feedbackOverlay!: HTMLElement;
@@ -94,6 +97,9 @@ export class Controls implements PlayerPluginInstance {
         if (this.bigPlayBtn && this.bigPlayBtn.parentNode) {
             this.bigPlayBtn.parentNode.removeChild(this.bigPlayBtn);
         }
+        if (this.loader && this.loader.parentNode) {
+            this.loader.parentNode.removeChild(this.loader);
+        }
     }
 
     private createDOM(): HTMLElement {
@@ -113,6 +119,12 @@ export class Controls implements PlayerPluginInstance {
         this.bigPlayBtn.className = "ap-big-play";
         this.bigPlayBtn.appendChild(createSVG(this.icons.playBig, { size: 64, color: "var(--ap-on-surface)" }));
         this.player.getContainer().appendChild(this.bigPlayBtn);
+
+        // Loader Spinner
+        this.loader = document.createElement("div");
+        this.loader.className = "ap-loader";
+        this.loader.appendChild(createSVG(this.icons.loading, { size: 64, color: "var(--ap-primary)" }));
+        this.player.getContainer().appendChild(this.loader);
 
         // Progress
         const progRow = document.createElement("div");
@@ -319,6 +331,15 @@ export class Controls implements PlayerPluginInstance {
             this.fullscreenBtn.innerHTML = '';
             this.fullscreenBtn.appendChild(createSVG(isFull ? this.icons.exitFullscreen : this.icons.fullscreen));
         });
+
+        // Loading events
+        this.player.on('waiting', () => this.loader.classList.add('visible'));
+        this.player.on('stalled', () => this.loader.classList.add('visible'));
+        this.player.on('canplay', () => this.loader.classList.remove('visible'));
+        this.player.on('canplaythrough', () => this.loader.classList.remove('visible'));
+        this.player.on('playing', () => this.loader.classList.remove('visible'));
+        this.player.on('seeking', () => this.loader.classList.add('visible'));
+        this.player.on('seeked', () => this.loader.classList.remove('visible'));
 
         // Initial state
         const paused = this.player.getState().paused;

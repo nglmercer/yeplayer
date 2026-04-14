@@ -168,6 +168,10 @@ export class Player implements IPlayer {
         this.events.emit("progress", bufferedEnd, this.media.duration || 0);
       }
     });
+    this.media.addEventListener("waiting", () => this.events.emit("waiting"));
+    this.media.addEventListener("stalled", () => this.events.emit("stalled"));
+    this.media.addEventListener("canplaythrough", () => this.events.emit("canplaythrough"));
+    this.media.addEventListener("playing", () => this.events.emit("playing"));
   }
 
   use(plugin: PlayerPlugin) {
