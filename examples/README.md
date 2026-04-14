@@ -5,8 +5,8 @@ This directory contains examples of how to integrate **yeplayer** into different
 ## [Vanilla JS](./vanilla-js/index.html)
 A pure HTML/JS implementation using ES modules. Ideal for static sites or simple integrations.
 
-## [Preact Component](./preact/VideoPlayer.tsx)
-A reusable Preact component using hooks. Shows how to handle initialization and cleanup.
+## [Preact Demo](./preact/index.html)
+A premium, full-featured demo implementation using Preact hooks and glassmorphism design.
 
 ## [Vue Component](./vue/VideoPlayer.vue)
 A Vue 3 Composition API component (SFC). Demonstrates lifecycle hooks and reactive source updates.
@@ -15,16 +15,13 @@ A Vue 3 Composition API component (SFC). Demonstrates lifecycle hooks and reacti
 
 ### How to Run
 
-1. Install dependencies:
+1. Build the library:
    ```bash
-   npm install
+   bun run build
    ```
-2. Build the library:
+2. Start the development server:
    ```bash
-   npm run build
+   bun run bun.ts
    ```
-3. Serve the current directory:
-   ```bash
-   npm run serve
-   ```
-4. Navigate to `http://localhost:5173/examples/vanilla-js/index.html`
+3. Navigate to `http://localhost:3001/examples/preact/index.html`
+

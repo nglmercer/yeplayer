@@ -1,16 +1,24 @@
-/** @jsx h */
-import { h } from 'preact';
+//import { h } from 'preact';
 import { useEffect, useRef } from 'preact/hooks';
 import { Player, createControls, createGestures, createHlsPlugin } from 'ssassplayer';
 import '../../dist/player.css';
+
+interface SubtitleTrack {
+  id: string;
+  label: string;
+  lang: string;
+  url: string;
+}
 
 interface PlayerProps {
   src: string;
   poster?: string;
   autoplay?: boolean;
+  subtitles?: SubtitleTrack[];
+  onEnded?: () => void;
 }
 
-export const VideoPlayer = ({ src, poster, autoplay }: PlayerProps) => {
+export const VideoPlayer = ({ src, poster, autoplay, subtitles, onEnded }: PlayerProps) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const playerRef = useRef<Player | null>(null);
@@ -18,47 +26,52 @@ export const VideoPlayer = ({ src, poster, autoplay }: PlayerProps) => {
   useEffect(() => {
     if (!videoRef.current || !containerRef.current) return;
 
-    // Initialize Player
     const player = new Player({
       media: videoRef.current,
       container: containerRef.current,
-      autoplay: autoplay || false
+      autoplay: !!autoplay
     });
 
-    // Add Plugins
     const setupPlugins = async () => {
+      await player.usePlugin(createHlsPlugin());
+      
+      if (src) {
+        player.setSource(src);
+      }
+
       await player.usePlugin(createControls());
       await player.usePlugin(createGestures());
-      await player.usePlugin(createHlsPlugin());
 
-      // Set Source
-      player.setSource(src);
+      if (autoplay) {
+        player.play().catch(e => console.warn("Autoplay blocked:", e));
+      }
     }
 
     setupPlugins();
 
+    const handleEnded = () => onEnded?.();
+    videoRef.current.addEventListener('ended', handleEnded);
+
     playerRef.current = player;
 
     return () => {
-      // Cleanup
+      videoRef.current?.removeEventListener('ended', handleEnded);
       player.destroy();
     };
-  }, [src, autoplay]);
+  }, [src, autoplay]); // Depend on src to re-init if key is not used, though App.tsx uses key
 
   return (
     <div
       ref={containerRef}
       className="player-wrapper"
-      style={{ width: '100%', aspectRatio: '16/9', background: '#000' }}
     >
       <video
         ref={videoRef}
         poster={poster}
+        className="w-full h-full object-contain"
         crossorigin="anonymous"
       />
     </div>
   );
 };
 
-// Usage Example:
-// <VideoPlayer src="https://example.com/stream.m3u8" />
