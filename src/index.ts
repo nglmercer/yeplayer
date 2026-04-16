@@ -2,11 +2,10 @@ export { Emitter } from "./emitter";
 export { Player } from "./player";
 export * from "./types";
 export * from "./core";
-export { Menu, Dropdown } from "./ui/menu";
+export { Menu, Dropdown, type MenuOptions,type MenuGroup } from "./ui/menu";
 export { Controls, createControls } from "./ui/controls";
 export { Gestures, createGestures } from "./ui/gestures";
 export { APMenuElement, APGesturesElement } from "./ui/components";
-
 // Plugin interfaces (re-export for convenience)
 export type {
   QualityPlugin,

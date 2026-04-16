@@ -1,6 +1,7 @@
 //import { h } from 'preact';
 import { useEffect, useRef } from 'preact/hooks';
-import { Player, createControls, createGestures, createHlsPlugin } from '../../src';
+import { Player, createControls, createGestures, createHlsPlugin, Menu } from '../../src';
+import type { MenuGroup } from '../../src';
 import '../../dist/player.css';
 
 interface SubtitleTrack {
@@ -35,9 +36,107 @@ export const VideoPlayer = ({ src, poster, autoplay, subtitles, onEnded }: Playe
     const setupPlugins = async () => {
       try {
         // 1. Install plugins first (HLS plugin now auto-imports hls.js)
-        await player.usePlugin(createHlsPlugin());
-        await player.usePlugin(createControls());
+        const hls = await player.usePlugin(createHlsPlugin());
+        const controls = await player.usePlugin(createControls());
         await player.usePlugin(createGestures());
+
+        // Build menu with quality and subtitle options
+        const updateMenu = () => {
+          const groups: MenuGroup[] = [];
+
+          // Quality options
+          const qualityProvider = player.getAPI().getQualityProvider();
+          if (qualityProvider) {
+            const qualities = qualityProvider.getAvailableQualities();
+            const currentQuality = qualityProvider.getCurrentQuality();
+            if (qualities.length > 0) {
+              groups.push({
+                label: "Quality",
+                items: [
+                  {
+                    type: "select",
+                    id: "quality",
+                    label: "Select Quality",
+                    value: String(currentQuality?.id ?? -1),
+                    options: [
+                      { value: "-1", label: "Auto" },
+                      ...qualities.map((q) => ({ value: String(q.id), label: q.label }))
+                    ],
+                    onChange: (val: string) => qualityProvider.setQuality(parseInt(val))
+                  }
+                ]
+              });
+            }
+          }
+
+          // Subtitle options
+          const textTracks = videoRef.current?.textTracks;
+          if (textTracks && textTracks.length > 0) {
+            const trackOptions: { value: string, label: string }[] = [];
+            for (let i = 0; i < textTracks.length; i++) {
+              const track = textTracks[i];
+              trackOptions.push({ value: String(i), label: track.label || `Track ${i}` });
+            }
+            groups.push({
+              label: "Subtitles",
+              items: [
+                {
+                  type: "select",
+                  id: "subtitles",
+                  label: "Select Subtitle",
+                  value: String(Array.from(textTracks).findIndex(t => t.mode === 'showing')),
+                  options: [
+                    { value: "-1", label: "Off" },
+                    ...trackOptions
+                  ],
+                  onChange: (val: string) => {
+                    for (let i = 0; i < textTracks.length; i++) {
+                      textTracks[i].mode = i === parseInt(val) ? 'showing' : 'hidden';
+                    }
+                  }
+                }
+              ]
+            });
+          }
+
+          // Playback options
+          groups.push({
+            label: "Playback",
+            items: [
+              {
+                type: "toggle",
+                id: "loop",
+                label: "Loop Video",
+                value: false,
+                onChange: (val: boolean) => { if (videoRef.current) videoRef.current.loop = val; }
+              },
+              {
+                type: "select",
+                id: "speed",
+                label: "Playback Speed",
+                value: "1",
+                options: [
+                  { value: "0.5", label: "0.5x" },
+                  { value: "1", label: "Normal" },
+                  { value: "1.5", label: "1.5x" },
+                  { value: "2", label: "2x" }
+                ],
+                onChange: (val: string) => player.setRate(parseFloat(val))
+              }
+            ]
+          });
+
+          return groups;
+        };
+
+        const menu = new Menu(containerRef.current!, updateMenu());
+
+        // Connect settings button to menu
+        controls.getSettingsButton().onclick = (e: Event) => {
+          e.stopPropagation();
+          menu.setGroups(updateMenu());
+          menu.toggle();
+        };
 
         // 2. Set source — the HLS plugin's sourcechange listener will handle .m3u8
         if (src) {
