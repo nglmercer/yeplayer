@@ -71,7 +71,7 @@ export class Controls implements PlayerPluginInstance {
     private loader!: HTMLElement;
 
     // Time format cycling
-    private timeFormat: 'elapsed' | 'remaining' | 'total' = 'elapsed';
+    private timeFormat: 'elapsed' | 'remaining' = 'elapsed';
 
     // Feedback
     private feedbackOverlay!: HTMLElement;
@@ -259,6 +259,13 @@ export class Controls implements PlayerPluginInstance {
             else this.player.requestFullscreen();
         };
 
+        // Time display click - cycle through formats
+        this.timeDisplay.onclick = (e) => {
+            e.stopPropagation();
+            this.timeFormat = this.timeFormat === 'elapsed' ? 'remaining' : 'elapsed';
+            this.updateTimeDisplay();
+        };
+
         // Seeking
         let isDragging = false;
 
@@ -266,12 +273,13 @@ export class Controls implements PlayerPluginInstance {
             const rect = this.progressContainer.getBoundingClientRect();
             const pos = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
             const duration = this.player.getState().duration || 0;
+            const time = pos * duration;
 
             // Update UI immediately (visual feedback)
             this.progressPlayed.style.width = `${pos * 100}%`;
-            this.timeDisplay.textContent = `${formatTime(pos * duration)} / ${formatTime(duration)}`;
+            this.updateTimeDisplay(time, duration);
 
-            return pos * duration;
+            return time;
         };
 
         const seek = (e: MouseEvent | TouchEvent) => {
@@ -329,7 +337,7 @@ export class Controls implements PlayerPluginInstance {
             if (!isDragging) {
                 const pct = duration > 0 ? (time / duration) * 100 : 0;
                 this.progressPlayed.style.width = `${pct}%`;
-                this.timeDisplay.textContent = `${formatTime(time)} / ${formatTime(duration)}`;
+                this.updateTimeDisplay(time, duration);
             }
         });
 
@@ -371,6 +379,27 @@ export class Controls implements PlayerPluginInstance {
     private updatePlayBtn(paused: boolean) {
         this.playBtn.innerHTML = '';
         this.playBtn.appendChild(createSVG(paused ? this.icons.play : this.icons.pause));
+    }
+
+    private updateTimeDisplay(time?: number, duration?: number) {
+        if (time === undefined) {
+            const state = this.player.getState();
+            time = state.currentTime;
+            duration = state.duration;
+        }
+        
+        const t = time ?? 0;
+        const d = duration ?? 0;
+        
+        switch (this.timeFormat) {
+            case 'elapsed':
+                this.timeDisplay.textContent = `${formatTime(t)} / ${formatTime(d)}`;
+                break;
+            case 'remaining':
+                const remaining = Math.max(0, d - t);
+                this.timeDisplay.textContent = `-${formatTime(remaining)} / ${formatTime(d)}`;
+                break;
+        }
     }
 
     private showFeedback(iconContent: string | HTMLElement) {

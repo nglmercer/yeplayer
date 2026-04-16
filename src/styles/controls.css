@@ -157,6 +157,15 @@
     font-weight: 600;
     letter-spacing: 0.02em;
     opacity: 0.85;
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: var(--ap-radius-sm);
+    transition: background 0.2s, opacity 0.2s;
+
+    &:hover {
+        background: var(--ap-surface-hover);
+        opacity: 1;
+    }
 }
 
 /* Volume - Slim & Sleek */
