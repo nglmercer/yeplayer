@@ -30,11 +30,11 @@
     --ap-transition: cubic-bezier(0.2, 0.8, 0.2, 1);
     
     /* Layout & Sizing */
-    --ap-progress-height: 5px;
-    --ap-progress-hover: 8px;
-    --ap-controls-height: 68px;
-    --ap-btn-size: 44px;
-    --ap-padding: 24px;
+    --ap-progress-height: 4px;
+    --ap-progress-hover: 6px;
+    --ap-controls-height: 48px;
+    --ap-btn-size: 36px;
+    --ap-padding: 16px;
 
     /* Scalability */
     --ap-scale: 1;

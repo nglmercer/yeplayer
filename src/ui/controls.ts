@@ -70,6 +70,9 @@ export class Controls implements PlayerPluginInstance {
     private settingsBtn!: HTMLElement;
     private loader!: HTMLElement;
 
+    // Time format cycling
+    private timeFormat: 'elapsed' | 'remaining' | 'total' = 'elapsed';
+
     // Feedback
     private feedbackOverlay!: HTMLElement;
     private bigPlayBtn!: HTMLElement;
@@ -129,6 +132,7 @@ export class Controls implements PlayerPluginInstance {
         // Progress
         const progRow = document.createElement("div");
         progRow.className = "controls-progress";
+
         this.progressContainer = document.createElement("div");
         this.progressContainer.className = "progress-container";
         this.progressContainer.tabIndex = 0; // Focusable
@@ -191,9 +195,16 @@ export class Controls implements PlayerPluginInstance {
         this.timeDisplay = document.createElement("div");
         this.timeDisplay.className = "time-display";
         this.timeDisplay.textContent = "0:00 / 0:00";
+        this.timeDisplay.style.cursor = "pointer";
+        this.timeDisplay.title = "Click to change time format";
         left.appendChild(this.timeDisplay);
 
         mainRow.appendChild(left);
+
+        // Center
+        const center = document.createElement("div");
+        center.className = "controls-center";
+        mainRow.appendChild(center);
 
         // Right
         const right = document.createElement("div");

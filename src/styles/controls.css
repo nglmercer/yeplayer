@@ -29,29 +29,41 @@
         justify-content: space-between;
         height: var(--ap-controls-height);
         padding: 0 var(--ap-padding);
+        gap: 16px;
 
         .controls-left,
         .controls-right {
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 8px;
+            min-width: 0;
+        }
+
+        .controls-center {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 0;
         }
     }
 }
 
 /* Progress bar - Enhanced */
 .controls-progress {
-    padding: 0 var(--ap-padding);
-    margin-bottom: -18px;
-    transform: translateY(-8px);
+    padding: 6px var(--ap-padding) 4px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
 
     .progress-container {
+        flex: 1;
         height: var(--ap-progress-height);
         background: rgba(255, 255, 255, 0.08);
         border-radius: 100px;
         cursor: pointer;
         transition: height 0.3s var(--ap-transition);
-        overflow: hidden;
+        overflow: visible;
         position: relative;
 
         &:hover {
@@ -71,16 +83,15 @@
         border-radius: 100px;
         position: relative;
 
-        /* Glowing edge */
         &::after {
             content: "";
             position: absolute;
             right: 0;
             top: 0;
             bottom: 0;
-            width: 4px;
+            width: 3px;
             background: #fff;
-            filter: blur(4px);
+            filter: blur(3px);
             opacity: 0.8;
         }
     }
@@ -97,14 +108,14 @@
     .scrubber {
         position: absolute;
         top: 50%;
-        right: -8px;
-        width: 16px;
-        height: 16px;
+        right: -6px;
+        width: 12px;
+        height: 12px;
         background: #fff;
         border-radius: 50%;
         transform: translateY(-50%) scale(0);
         transition: transform 0.3s var(--ap-transition);
-        box-shadow: 0 0 15px rgba(255, 255, 255, 0.8);
+        box-shadow: 0 0 10px rgba(255, 255, 255, 0.8);
         z-index: 2;
     }
 
