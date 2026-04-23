@@ -1,6 +1,6 @@
 {
   "name": "ssassplayer",
-  "version": "0.1.2",
+  "version": "0.1.5",
   "description": "Un reproductor de video/audio modular y extensible con sistema de plugins",
   "private": false,
   "files": [

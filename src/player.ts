@@ -27,14 +27,13 @@ export class Player implements IPlayer {
 
   readonly media: HTMLMediaElement;
   readonly events: Emitter<PlayerEvents>;
+  public currentSource?: string;
   private plugins: Array<{ dispose?: () => void }> = [];
   private pluginInstances = new Map<string, PlayerPluginInstance>();
   private ready = false;
   private pluginAPI!: PluginAPI;
   private container: HTMLElement;
   private frameExtractor: VideoFrameExtractor | null = null;
-
-  currentSource?: string;
 
   constructor(options: PlayerOptions) {
     this.media = options.media;
@@ -82,7 +81,7 @@ export class Player implements IPlayer {
       registerTextTrackProvider: (plugin: TextTrackPlugin) => {
         providers.textTrack = plugin;
         plugin.onTextTrackChange?.((track) => {
-          this.events.emit(PlayerEvent.TEXT_TRACK_CHANGE, track as any);
+          this.events.emit(PlayerEvent.TEXT_TRACK_CHANGE, track);
         });
       },
       registerAudioTrackProvider: (plugin: AudioTrackPlugin) => {
@@ -233,19 +232,19 @@ export class Player implements IPlayer {
     type: K,
     handler: (...args: PlayerEvents[K]) => void,
   ) {
-    return this.events.on(type, handler as any);
+    return this.events.on(type, handler);
   }
   once<K extends keyof PlayerEvents>(
     type: K,
     handler: (...args: PlayerEvents[K]) => void,
   ) {
-    return this.events.once(type, handler as any);
+    return this.events.once(type, handler);
   }
   off<K extends keyof PlayerEvents>(
     type: K,
     handler: (...args: PlayerEvents[K]) => void,
   ) {
-    this.events.off(type, handler as any);
+    this.events.off(type, handler);
   }
 
   async play(): Promise<void> {
@@ -287,8 +286,6 @@ export class Player implements IPlayer {
     const isHls = url.toLowerCase().split('?')[0].endsWith(".m3u8") || url.includes(".m3u8");
     const supportsNativeHls = !!this.media.canPlayType("application/vnd.apple.mpegurl");
 
-    // Avoid setting native src if we have HLS plugin and no native support
-    // Chrome/Firefox will fail if we set a .m3u8 src directly
     if (isHls && !supportsNativeHls && this.hasPlugin("hls-plugin")) {
       console.log("Player: HLS detected, deferring to hls-plugin");
     } else {
@@ -296,6 +293,7 @@ export class Player implements IPlayer {
       this.media.load();
     }
 
+    this.currentSource = url;
     this.events.emit(PlayerEvent.SOURCE_CHANGE, url);
   }
 
@@ -313,7 +311,7 @@ export class Player implements IPlayer {
       paused: this.media.paused,
       ready: this.ready,
       fullscreen: !!document.fullscreenElement,
-      pip: !!(document as any).pictureInPictureElement,
+      pip: !!(document as Document & { pictureInPictureElement: Element | null }).pictureInPictureElement,
       quality: qualityProvider?.getCurrentQuality() || undefined,
       textTrack: textTrackProvider?.getActiveTrack() || undefined,
       audioTrack: audioTrackProvider?.getActiveTrack() || undefined,
@@ -332,8 +330,8 @@ export class Player implements IPlayer {
   }
 
   requestFullscreen() {
-    const container = this.getPlayerContainer();
-    const el = container as any;
+    const container = this.getPlayerContainer() as HTMLElement & { webkitRequestFullscreen: () => void; mozRequestFullScreen: () => void; msRequestFullscreen: () => void; };
+    const el = container;
     if (el.requestFullscreen) {
       el.requestFullscreen();
     } else if (el.webkitRequestFullscreen) {
@@ -347,7 +345,7 @@ export class Player implements IPlayer {
   }
 
   exitFullscreen() {
-    const doc = document as any;
+    const doc = document as Document & { webkitExitFullscreen: () => void; mozCancelFullScreen: () => void; msExitFullscreen: () => void; };
     if (doc.exitFullscreen) {
       doc.exitFullscreen();
     } else if (doc.webkitExitFullscreen) {
