@@ -14,10 +14,17 @@ import type {
   MenuItem,
   IPlayer,
 } from "./types";
-
+import { PlayerEvent, MediaEvent } from "./types";
+import { getParentByClass } from "./utils/dom";
 export type PlayerPlugin = (player: Player) => void | { dispose(): void };
 
 export class Player implements IPlayer {
+  static readonly Event = PlayerEvent;
+
+  get Event() {
+    return PlayerEvent;
+  }
+
   readonly media: HTMLMediaElement;
   readonly events: Emitter<PlayerEvents>;
   private plugins: Array<{ dispose?: () => void }> = [];
@@ -26,6 +33,8 @@ export class Player implements IPlayer {
   private pluginAPI!: PluginAPI;
   private container: HTMLElement;
   private frameExtractor: VideoFrameExtractor | null = null;
+
+  currentSource?: string;
 
   constructor(options: PlayerOptions) {
     this.media = options.media;
@@ -51,13 +60,8 @@ export class Player implements IPlayer {
   }
 
   private getPlayerContainer(): HTMLElement {
-    // Find the nearest parent with class 'player' or containing class indicating wrapper, otherwise direct parent
-    let container = this.media.parentElement;
-    while (container && !container.classList.contains("player") && !container.classList.contains("player-wrapper") && container.tagName !== 'BODY') {
-      container = container.parentElement;
-    }
-    // Fallback to direct parent if specific class not found but parent exists
-    return container || this.media.parentElement || this.media;
+    const container = getParentByClass(this.media, ["player", "player-wrapper"], { stopAt: "BODY" });
+    return (container as HTMLElement) || this.media.parentElement || this.media;
   }
 
   private setupPluginAPI(): void {
@@ -72,19 +76,19 @@ export class Player implements IPlayer {
       registerQualityProvider: (plugin: QualityPlugin) => {
         providers.quality = plugin;
         plugin.onQualityChange?.((level) => {
-          this.events.emit("qualitychange", level);
+          this.events.emit(PlayerEvent.QUALITY_CHANGE, level);
         });
       },
       registerTextTrackProvider: (plugin: TextTrackPlugin) => {
         providers.textTrack = plugin;
         plugin.onTextTrackChange?.((track) => {
-          this.events.emit("texttrackchange", track as any);
+          this.events.emit(PlayerEvent.TEXT_TRACK_CHANGE, track as any);
         });
       },
       registerAudioTrackProvider: (plugin: AudioTrackPlugin) => {
         providers.audioTrack = plugin;
         plugin.onAudioTrackChange?.((track) => {
-          this.events.emit("audioplayerchange", track);
+          this.events.emit(PlayerEvent.AUDIO_PLAYER_CHANGE, track);
         });
       },
       registerThumbnailProvider: (plugin: ThumbnailPlugin) => {
@@ -95,10 +99,10 @@ export class Player implements IPlayer {
       getAudioTrackProvider: () => providers.audioTrack,
       getThumbnailProvider: () => providers.thumbnail,
       addMenuItem: (item: MenuItem) => {
-        this.events.emit("menuitemadded", item);
+        this.events.emit(PlayerEvent.MENU_ITEM_ADDED, item);
       },
       removeMenuItem: (itemId: string) => {
-        this.events.emit("menuitemremoved", itemId);
+        this.events.emit(PlayerEvent.MENU_ITEM_REMOVED, itemId);
       },
       getFrameExtractor: () => {
         if (!this.frameExtractor) {
@@ -112,66 +116,66 @@ export class Player implements IPlayer {
   }
 
   private bind() {
-    this.media.addEventListener("loadedmetadata", () => {
+    this.media.addEventListener(MediaEvent.LOADED_METADATA, () => {
       this.ready = true;
-      this.events.emit("ready", this.media);
+      this.events.emit(PlayerEvent.READY, this.media);
     });
-    this.media.addEventListener("loadeddata", () => {
+    this.media.addEventListener(MediaEvent.LOADED_DATA, () => {
       if (!this.ready && this.media.duration) {
         this.ready = true;
-        this.events.emit("ready", this.media);
+        this.events.emit(PlayerEvent.READY, this.media);
       }
     });
-    this.media.addEventListener("canplay", () => {
+    this.media.addEventListener(MediaEvent.CAN_PLAY, () => {
       if (!this.ready && this.media.duration) {
         this.ready = true;
-        this.events.emit("ready", this.media);
+        this.events.emit(PlayerEvent.READY, this.media);
       }
     });
-    this.media.addEventListener("play", () => this.events.emit("play"));
-    this.media.addEventListener("pause", () => this.events.emit("pause"));
-    this.media.addEventListener("timeupdate", () =>
+    this.media.addEventListener(MediaEvent.PLAY, () => this.events.emit(PlayerEvent.PLAY));
+    this.media.addEventListener(MediaEvent.PAUSE, () => this.events.emit(PlayerEvent.PAUSE));
+    this.media.addEventListener(MediaEvent.TIME_UPDATE, () =>
       this.events.emit(
-        "timeupdate",
+        PlayerEvent.TIME_UPDATE,
         this.media.currentTime,
         this.media.duration || 0,
       ),
     );
-    this.media.addEventListener("volumechange", () =>
-      this.events.emit("volumechange", this.media.volume, this.media.muted),
+    this.media.addEventListener(MediaEvent.VOLUME_CHANGE, () =>
+      this.events.emit(PlayerEvent.VOLUME_CHANGE, this.media.volume, this.media.muted),
     );
-    this.media.addEventListener("seeking", () =>
-      this.events.emit("seeking", this.media.currentTime),
+    this.media.addEventListener(MediaEvent.SEEKING, () =>
+      this.events.emit(PlayerEvent.SEEKING, this.media.currentTime),
     );
-    this.media.addEventListener("seeked", () =>
-      this.events.emit("seeked", this.media.currentTime),
+    this.media.addEventListener(MediaEvent.SEEKED, () =>
+      this.events.emit(PlayerEvent.SEEKED, this.media.currentTime),
     );
-    this.media.addEventListener("ratechange", () =>
-      this.events.emit("ratechange", this.media.playbackRate),
+    this.media.addEventListener(MediaEvent.RATE_CHANGE, () =>
+      this.events.emit(PlayerEvent.RATE_CHANGE, this.media.playbackRate),
     );
-    this.media.addEventListener("error", (e) => {
+    this.media.addEventListener(MediaEvent.ERROR, (e) => {
       const error = this.media.error
         ? new Error(this.media.error.message)
         : new Error("media error");
-      this.events.emit("error", error);
+      this.events.emit(PlayerEvent.ERROR, error);
     });
-    this.media.addEventListener("durationchange", () => {
+    this.media.addEventListener(MediaEvent.DURATION_CHANGE, () => {
       if (this.media.duration && this.media.duration > 0) {
-        this.events.emit("durationchange", this.media.duration);
+        this.events.emit(PlayerEvent.DURATION_CHANGE, this.media.duration);
       }
     });
-    this.media.addEventListener("progress", () => {
+    this.media.addEventListener(MediaEvent.PROGRESS, () => {
       if (this.media.buffered.length > 0) {
         const bufferedEnd = this.media.buffered.end(
           this.media.buffered.length - 1,
         );
-        this.events.emit("progress", bufferedEnd, this.media.duration || 0);
+        this.events.emit(PlayerEvent.PROGRESS, bufferedEnd, this.media.duration || 0);
       }
     });
-    this.media.addEventListener("waiting", () => this.events.emit("waiting"));
-    this.media.addEventListener("stalled", () => this.events.emit("stalled"));
-    this.media.addEventListener("canplaythrough", () => this.events.emit("canplaythrough"));
-    this.media.addEventListener("playing", () => this.events.emit("playing"));
+    this.media.addEventListener(MediaEvent.WAITING, () => this.events.emit(PlayerEvent.WAITING));
+    this.media.addEventListener(MediaEvent.STALLED, () => this.events.emit(PlayerEvent.STALLED));
+    this.media.addEventListener(MediaEvent.CAN_PLAY_THROUGH, () => this.events.emit(PlayerEvent.CAN_PLAY_THROUGH));
+    this.media.addEventListener(MediaEvent.PLAYING, () => this.events.emit(PlayerEvent.PLAYING));
   }
 
   use(plugin: PlayerPlugin) {
@@ -292,7 +296,7 @@ export class Player implements IPlayer {
       this.media.load();
     }
 
-    this.events.emit("sourcechange", url);
+    this.events.emit(PlayerEvent.SOURCE_CHANGE, url);
   }
 
   getState(): PlayerState {
@@ -339,7 +343,7 @@ export class Player implements IPlayer {
     } else if (el.msRequestFullscreen) {
       el.msRequestFullscreen();
     }
-    this.events.emit("fullscreenchange", true);
+    this.events.emit(PlayerEvent.FULLSCREEN_CHANGE, true);
   }
 
   exitFullscreen() {
@@ -353,7 +357,7 @@ export class Player implements IPlayer {
     } else if (doc.msExitFullscreen) {
       doc.msExitFullscreen();
     }
-    this.events.emit("fullscreenchange", false);
+    this.events.emit(PlayerEvent.FULLSCREEN_CHANGE, false);
   }
 
   destroy() {

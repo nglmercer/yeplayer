@@ -148,7 +148,6 @@ class AssPlugin implements PlayerPluginInstance {
             // JASSUB no tiene un método 'clear' explícito documentado siempre,
             // pero setTrack con string vacío suele funcionar
             try {
-                // @ts-ignore
                 this.jassub.setTrack("");
             } catch (e) { }
             return;
@@ -156,17 +155,17 @@ class AssPlugin implements PlayerPluginInstance {
 
         // Cargar el contenido del archivo ASS
         // Ojo: track.src debería ser la URL del .ass
-        if ((track as any).src) {
+        if (track.src) {
             try {
-                const response = await fetch((track as any).src);
+                const response = await fetch(track.src);
                 const content = await response.text();
                 this.jassub.setTrack(content);
             } catch (e) {
                 console.error("AssPlugin: Failed to load ASS track", e);
             }
-        } else if ((track as any).content) {
+        } else if (track.content) {
             // Si el contenido ya está en el objeto track
-            this.jassub.setTrack((track as any).content);
+            this.jassub.setTrack(track.content);
         }
     }
 

@@ -23,7 +23,83 @@ export interface PlayerEvents extends EventMap {
   stalled: [];
   canplaythrough: [];
   playing: [];
+  menuitemadded: [MenuItem];
+  menuitemremoved: [string];
 }
+
+export enum PlayerEvent {
+  READY = "ready",
+  PLAY = "play",
+  PAUSE = "pause",
+  TIME_UPDATE = "timeupdate",
+  VOLUME_CHANGE = "volumechange",
+  SEEKING = "seeking",
+  SEEKED = "seeked",
+  RATE_CHANGE = "ratechange",
+  ERROR = "error",
+  SOURCE_CHANGE = "sourcechange",
+  QUALITY_CHANGE = "qualitychange",
+  FULLSCREEN_CHANGE = "fullscreenchange",
+  DURATION_CHANGE = "durationchange",
+  PROGRESS = "progress",
+  TEXT_TRACK_CHANGE = "texttrackchange",
+  AUDIO_PLAYER_CHANGE = "audioplayerchange",
+  PIP_CHANGE = "pipchange",
+  THUMBNAILS_LOADED = "thumbnailsloaded",
+  WAITING = "waiting",
+  STALLED = "stalled",
+  CAN_PLAY_THROUGH = "canplaythrough",
+  PLAYING = "playing",
+  MENU_ITEM_ADDED = "menuitemadded",
+  MENU_ITEM_REMOVED = "menuitemremoved",
+}
+
+export enum MediaEvent {
+  LOADED_METADATA = "loadedmetadata",
+  LOADED_DATA = "loadeddata",
+  CAN_PLAY = "canplay",
+  PLAY = "play",
+  PAUSE = "pause",
+  TIME_UPDATE = "timeupdate",
+  VOLUME_CHANGE = "volumechange",
+  SEEKING = "seeking",
+  SEEKED = "seeked",
+  RATE_CHANGE = "ratechange",
+  ERROR = "error",
+  DURATION_CHANGE = "durationchange",
+  PROGRESS = "progress",
+  WAITING = "waiting",
+  STALLED = "stalled",
+  CAN_PLAY_THROUGH = "canplaythrough",
+  PLAYING = "playing",
+}
+
+export const PlayerEventsList = [
+  "ready",
+  "play",
+  "pause",
+  "timeupdate",
+  "volumechange",
+  "seeking",
+  "seeked",
+  "ratechange",
+  "error",
+  "sourcechange",
+  "qualitychange",
+  "fullscreenchange",
+  "durationchange",
+  "progress",
+  "texttrackchange",
+  "audioplayerchange",
+  "pipchange",
+  "thumbnailsloaded",
+  "waiting",
+  "stalled",
+  "canplaythrough",
+  "playing",
+  "menuitemadded",
+  "menuitemremoved",
+] as const;
 
 // Plugin System Types
 export interface QualityLevel {
@@ -43,6 +119,7 @@ export interface TextTrack {
   kind: "subtitles" | "captions" | "descriptions" | "chapters" | "metadata";
   src?: string;
   active: boolean;
+  content?: string;
 }
 
 export interface AudioTrack {
@@ -161,7 +238,9 @@ export interface PlayerState {
 // Forward declaration to avoid circular dependency
 export interface IPlayer {
   media: HTMLMediaElement;
-  events: any; // Avoid circular dependency
+  events: Record<string, any>; // Avoid circular dependency
+  currentSource?: string;
+  src?: string;
   on<K extends string>(type: K, handler: (...args: any[]) => void): () => void;
   once<K extends string>(
     type: K,

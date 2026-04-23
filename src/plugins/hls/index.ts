@@ -75,7 +75,7 @@ class HlsPlugin implements PlayerPluginInstance {
             this.setupTextTrackProvider();
 
             // Handle HLS events
-            this.hlsInstance!.on(HlsClass.Events.MANIFEST_PARSED, (event: any, data: any) => {
+            this.hlsInstance!.on(HlsClass.Events.MANIFEST_PARSED, (event, data) => {
                 console.log("HLS: Manifest parsed", data);
                 // Trigger quality update
                 if (this.qualityCallback) {
@@ -84,11 +84,11 @@ class HlsPlugin implements PlayerPluginInstance {
                 }
             });
 
-            this.hlsInstance!.on(HlsClass.Events.ERROR, (event: any, data: any) => {
+            this.hlsInstance!.on(HlsClass.Events.ERROR, (event, data) => {
                 console.error("HLS Error:", data);
             });
 
-            this.hlsInstance!.on(HlsClass.Events.LEVEL_SWITCHED, (event: any, data: any) => {
+            this.hlsInstance!.on(HlsClass.Events.LEVEL_SWITCHED, (event, data) => {
                 if (this.qualityCallback) {
                     const current = this.getCurrentQuality();
                     if (current) this.qualityCallback(current);
@@ -122,7 +122,7 @@ class HlsPlugin implements PlayerPluginInstance {
             this.cleanupListeners.push(removeListener);
 
             // Initial check for already set source
-            const currentSrc = (this.player as any).currentSource || video.src;
+            const currentSrc = this.player.currentSource || video.src;
             if (currentSrc && (currentSrc.includes(".m3u8"))) {
                 if (video.src) {
                     video.removeAttribute('src');
@@ -172,7 +172,7 @@ class HlsPlugin implements PlayerPluginInstance {
         const provider: AudioTrackPlugin = {
             getAudioTracks: () => {
                 if (!this.hlsInstance) return [];
-                return this.hlsInstance!.audioTracks.map((track: any, index: number) => ({
+                return this.hlsInstance!.audioTracks.map((track, index: number) => ({
                     id: String(track.id || index),
                     label: track.name || track.lang || `Track ${index}`,
                     language: track.lang || 'unknown',
@@ -206,7 +206,7 @@ class HlsPlugin implements PlayerPluginInstance {
         // Listen for changes
         if (this.hlsInstance) {
             const HlsClass = this.HlsClass;
-            this.hlsInstance.on(HlsClass!.Events.AUDIO_TRACK_SWITCHED, (event: any, data: any) => {
+            this.hlsInstance.on(HlsClass!.Events.AUDIO_TRACK_SWITCHED, (event, data) => {
                 console.log("HLS: Audio track switched", data);
                 if (this.audioTrackCallback) {
                     const track = provider.getActiveTrack();
@@ -228,7 +228,7 @@ class HlsPlugin implements PlayerPluginInstance {
                 // The current TextTrackProvider interface assumes static list or callbacks on active track change.
             });
 
-            this.hlsInstance.on(HlsClass!.Events.SUBTITLE_TRACK_SWITCH, (event: any, data: any) => {
+            this.hlsInstance.on(HlsClass!.Events.SUBTITLE_TRACK_SWITCH, (event, data) => {
                 if (this.textTrackCallback) {
                     const track = provider.getActiveTrack();
                     this.textTrackCallback(track);
@@ -239,7 +239,7 @@ class HlsPlugin implements PlayerPluginInstance {
         const provider: import("../../types").TextTrackPlugin = {
             getTextTracks: () => {
                 if (!this.hlsInstance) return [];
-                return this.hlsInstance.subtitleTracks.map((track: any, index: number) => ({
+                return this.hlsInstance.subtitleTracks.map((track, index: number) => ({
                     id: String(index),
                     label: track.name || track.lang || `Subtitle ${index}`,
                     language: track.lang || 'unknown',

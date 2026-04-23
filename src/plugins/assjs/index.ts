@@ -116,11 +116,11 @@ class AssJsPlugin implements PlayerPluginInstance {
 
         // Prepare content
         let content = "";
-        if ((track as any).content) {
-            content = (track as any).content;
-        } else if ((track as any).src) {
+        if (track.content) {
+            content = track.content;
+        } else if (track.src) {
             try {
-                const response = await fetch((track as any).src);
+                const response = await fetch(track.src);
                 content = await response.text();
             } catch (e) {
                 console.error("AssJsPlugin: Failed to load ASS track", e);
@@ -188,8 +188,8 @@ class AssJsPlugin implements PlayerPluginInstance {
 
             // Handle resize for ASS.js
             const resizeObserver = new ResizeObserver(() => {
-                if (this.assInstance && typeof (this.assInstance as any).resample === 'function') {
-                    (this.assInstance as any).resample();
+                if (this.assInstance && typeof this.assInstance.resample === 'function') {
+                    this.assInstance.resample();
                 }
             });
             resizeObserver.observe(video);

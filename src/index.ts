@@ -2,6 +2,7 @@ export { Emitter } from "./emitter";
 export { Player } from "./player";
 export * from "./types";
 export * from "./core";
+export * from "./utils/dom";
 export { Menu, Dropdown, type MenuOptions,type MenuGroup } from "./ui/menu";
 export { Controls, createControls } from "./ui/controls";
 export { Gestures, createGestures } from "./ui/gestures";
