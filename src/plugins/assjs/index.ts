@@ -51,6 +51,7 @@ class AssJsPlugin implements PlayerPluginInstance {
     private activeTrackId: string | null = null;
     private cleanupListeners: (() => void)[] = [];
     private container: HTMLElement | null = null;
+    private resizeObserver: ResizeObserver | null = null;
 
     constructor(
         private player: IPlayer,
@@ -70,13 +71,20 @@ class AssJsPlugin implements PlayerPluginInstance {
         this.api.registerTextTrackProvider({
             getTextTracks: () => this.tracks,
             addTrack: (track) => {
+                const id = track.id || `assjs-${Date.now()}`;
+                const existingIdx = this.tracks.findIndex(t => t.id === id);
                 const newTrack = {
                     ...track,
-                    id: track.id || `assjs-${Date.now()}`,
+                    id,
                     kind: 'subtitles' as const
                 };
-                this.tracks.push(newTrack);
-                return newTrack.id;
+                
+                if (existingIdx >= 0) {
+                    this.tracks[existingIdx] = newTrack;
+                } else {
+                    this.tracks.push(newTrack);
+                }
+                return id;
             },
             removeTrack: (trackId) => {
                 this.tracks = this.tracks.filter(t => t.id !== trackId);
@@ -187,13 +195,23 @@ class AssJsPlugin implements PlayerPluginInstance {
             });
 
             // Handle resize for ASS.js
-            const resizeObserver = new ResizeObserver(() => {
-                if (this.assInstance && typeof this.assInstance.resample === 'function') {
-                    this.assInstance.resample();
-                }
-            });
-            resizeObserver.observe(video);
-            this.cleanupListeners.push(() => resizeObserver.disconnect());
+            if (!this.resizeObserver) {
+                this.resizeObserver = new ResizeObserver(() => {
+                    if (this.assInstance && typeof this.assInstance.resample === 'function') {
+                        this.assInstance.resample();
+                    }
+                });
+                this.resizeObserver.observe(video);
+            }
+
+            // ASS.js starts its render loop from 'play' / 'playing' events.
+            // When switching tracks while the video is already playing those
+            // events have already fired, so the new ASS instance might not begin
+            // rendering. Dispatch a synthetic 'playing' event to kick-start it.
+            if (!video.paused) {
+                console.log("AssJsPlugin: Video already playing, dispatching synthetic playing event");
+                video.dispatchEvent(new Event("playing"));
+            }
         } catch (e) {
             console.error("AssJsPlugin: Failed to initialize ASS.js", e);
         }
@@ -208,6 +226,10 @@ class AssJsPlugin implements PlayerPluginInstance {
         // If it was passed in options, we leave it.
         if (this.container && !this.options.container && this.container.parentElement) {
             this.container.parentElement.removeChild(this.container);
+        }
+        if (this.resizeObserver) {
+            this.resizeObserver.disconnect();
+            this.resizeObserver = null;
         }
         this.cleanupListeners.forEach(fn => fn());
         this.tracks = [];

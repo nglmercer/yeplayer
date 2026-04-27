@@ -7,6 +7,16 @@ export function App() {
     const [videoUrl, setVideoUrl] = useState('https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8');
     const [inputValue, setInputValue] = useState(videoUrl);
 
+    const sampleSubtitles = [
+        {
+            id: 'demo-ass',
+            label: 'English',
+            lang: 'en',
+            format: 'ass' as const,
+            content: `[Script Info]\nScriptType: v4.00+\nPlayResX: 1280\nPlayResY: 720\n\n[V4+ Styles]\nFormat: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding\nStyle: Default,Arial,48,&H00FFFFFF,&H000000FF,&H00000000,&H00000000,0,0,0,0,100,100,0,0,1,2,2,2,10,10,10,1\n\n[Events]\nFormat: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text\nDialogue: 0,0:00:01.00,0:00:05.00,Default,,0,0,0,,Welcome to ssassplayer demo!\nDialogue: 0,0:00:05.00,0:00:10.00,Default,,0,0,0,,{\\c&H00FFFF&}Yellow subtitle text using ASS.js`
+        }
+    ];
+
     const handleLoad = () => {
         setVideoUrl(inputValue);
     };
@@ -34,7 +44,12 @@ export function App() {
             </div>
 
             <main class="player-card">
-                <VideoPlayer key={videoUrl} src={videoUrl} autoplay={true} />
+                <VideoPlayer 
+                    key={videoUrl} 
+                    src={videoUrl} 
+                    autoplay={true} 
+                    subtitles={sampleSubtitles} 
+                />
             </main>
         </div>
     );

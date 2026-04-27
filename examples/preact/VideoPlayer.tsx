@@ -1,21 +1,24 @@
 //import { h } from 'preact';
 import { useEffect, useRef } from 'preact/hooks';
-import { Player, createControls, createGestures, createHlsPlugin, Menu } from '../../src';
+import { Player, createControls, createGestures, createHlsPlugin, createAssJsPlugin, Menu, Controls, type TextTrack as APTextTrack } from '../../src';
 import type { MenuGroup } from '../../src';
+import ASS from 'assjs';
 import '../../dist/player.css';
 
-interface SubtitleTrack {
+export interface CustomSubtitleTrack {
   id: string;
   label: string;
   lang: string;
-  url: string;
+  format: 'ass' | 'ssa' | 'srt';
+  content?: string;
+  url?: string;
 }
 
 interface PlayerProps {
   src: string;
   poster?: string;
   autoplay?: boolean;
-  subtitles?: SubtitleTrack[];
+  subtitles?: CustomSubtitleTrack[];
   onEnded?: () => void;
 }
 
@@ -36,8 +39,8 @@ export const VideoPlayer = ({ src, poster, autoplay, subtitles, onEnded }: Playe
     const setupPlugins = async () => {
       try {
         // 1. Install plugins first (HLS plugin now auto-imports hls.js)
-        const hls = await player.usePlugin(createHlsPlugin());
-        const controls = await player.usePlugin(createControls());
+        await player.usePlugin(createHlsPlugin());
+        const controls = (await player.usePlugin(createControls())) as Controls;
         await player.usePlugin(createGestures());
 
         // Build menu with quality and subtitle options
@@ -70,13 +73,36 @@ export const VideoPlayer = ({ src, poster, autoplay, subtitles, onEnded }: Playe
           }
 
           // Subtitle options
-          const textTracks = videoRef.current?.textTracks;
-          if (textTracks && textTracks.length > 0) {
+          const textProvider = player.getAPI().getTextTrackProvider();
+          const nativeTracks = videoRef.current?.textTracks;
+          
+          if (textProvider || (nativeTracks && nativeTracks.length > 0)) {
             const trackOptions: { value: string, label: string }[] = [];
-            for (let i = 0; i < textTracks.length; i++) {
-              const track = textTracks[i];
-              trackOptions.push({ value: String(i), label: track.label || `Track ${i}` });
+            
+            // Native tracks
+            if (nativeTracks) {
+              for (let i = 0; i < nativeTracks.length; i++) {
+                const track = nativeTracks[i];
+                trackOptions.push({ value: `native:${i}`, label: track.label || `Native Track ${i}` });
+              }
             }
+            
+            // Plugin tracks (ASS, etc.)
+            const pluginTracks = textProvider?.getTextTracks() || ([] as APTextTrack[]);
+            for (const track of pluginTracks) {
+                trackOptions.push({ value: `plugin:${track.id}`, label: `${track.label} (${track.language})` });
+            }
+
+            const activeTrack = textProvider?.getActiveTrack();
+            let currentValue = "-1";
+            
+            if (activeTrack) {
+                currentValue = `plugin:${activeTrack.id}`;
+            } else if (nativeTracks) {
+                const nativeIdx = Array.from(nativeTracks).findIndex(t => t.mode === 'showing');
+                if (nativeIdx >= 0) currentValue = `native:${nativeIdx}`;
+            }
+
             groups.push({
               label: "Subtitles",
               items: [
@@ -84,14 +110,24 @@ export const VideoPlayer = ({ src, poster, autoplay, subtitles, onEnded }: Playe
                   type: "select",
                   id: "subtitles",
                   label: "Select Subtitle",
-                  value: String(Array.from(textTracks).findIndex(t => t.mode === 'showing')),
+                  value: currentValue,
                   options: [
                     { value: "-1", label: "Off" },
                     ...trackOptions
                   ],
                   onChange: (val: string) => {
-                    for (let i = 0; i < textTracks.length; i++) {
-                      textTracks[i].mode = i === parseInt(val) ? 'showing' : 'hidden';
+                    // Turn off everything first
+                    if (nativeTracks) {
+                        for (let i = 0; i < nativeTracks.length; i++) nativeTracks[i].mode = 'hidden';
+                    }
+                    if (textProvider) textProvider.setActiveTrack(null);
+                    
+                    if (val.startsWith('native:')) {
+                        const idx = parseInt(val.split(':')[1]);
+                        if (nativeTracks && nativeTracks[idx]) nativeTracks[idx].mode = 'showing';
+                    } else if (val.startsWith('plugin:')) {
+                        const id = val.split(':')[1];
+                        textProvider?.setActiveTrack(id);
                     }
                   }
                 }
@@ -138,7 +174,27 @@ export const VideoPlayer = ({ src, poster, autoplay, subtitles, onEnded }: Playe
           menu.toggle();
         };
 
-        // 2. Set source — the HLS plugin's sourcechange listener will handle .m3u8
+        // 2. Install Subtitle Plugin if needed
+        if (subtitles && subtitles.some(s => s.format === 'ass' || s.format === 'ssa')) {
+            await player.usePlugin(createAssJsPlugin({ ass: ASS as any }));
+            
+            const provider = player.getAPI().getTextTrackProvider();
+            if (provider) {
+                for (const sub of subtitles) {
+                    provider.addTrack({
+                        id: sub.id,
+                        label: sub.label,
+                        language: sub.lang,
+                        content: sub.content,
+                        src: sub.url,
+                        kind: 'subtitles',
+                        active: false
+                    });
+                }
+            }
+        }
+
+        // 3. Set source — the HLS plugin's sourcechange listener will handle .m3u8
         if (src) {
           player.setSource(src);
         }
